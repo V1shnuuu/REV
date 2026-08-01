@@ -9,10 +9,9 @@
 # packages, and plugins designed to encourage good coding practices.
 include: package:flutter_lints/flutter.yaml
 
-analyzer:
-  errors:
-    deprecated_member_use: ignore
-
+# deprecated_member_use was previously silenced here, which was hiding 142
+# withOpacity() call sites. Those have been migrated to withValues(); the
+# check is back on so the next deprecation surfaces instead of accumulating.
 linter:
   rules:
     # avoid_print: false  # Uncomment to disable the `avoid_print` rule

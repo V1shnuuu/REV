@@ -270,7 +270,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin, 
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(Icons.chat_bubble_outline,
-              color: Colors.white.withOpacity(0.1), size: 64),
+              color: Colors.white.withValues(alpha: 0.1), size: 64),
           const SizedBox(height: 16),
           Text(
             'Ask me about CPR & First Aid',
@@ -313,7 +313,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin, 
               ),
               backgroundColor: const Color(0xFF1A1A2E),
               side: BorderSide(
-                  color: const Color(0xFFE63946).withOpacity(0.3)),
+                  color: const Color(0xFFE63946).withValues(alpha: 0.3)),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20)),
               onPressed: () => _sendMessage(suggestions[index]),
@@ -365,12 +365,12 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin, 
                 border: isUser
                     ? null
                     : Border.all(
-                        color: Colors.white.withOpacity(0.06)),
+                        color: Colors.white.withValues(alpha: 0.06)),
               ),
               child: Text(
                 message.text,
                 style: GoogleFonts.inter(
-                  color: Colors.white.withOpacity(0.9),
+                  color: Colors.white.withValues(alpha: 0.9),
                   fontSize: 14,
                   height: 1.5,
                 ),
@@ -383,7 +383,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin, 
               width: 32,
               height: 32,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Icon(Icons.person, color: Colors.white54, size: 16),
@@ -422,7 +422,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin, 
                 bottomRight: Radius.circular(18),
                 bottomLeft: Radius.circular(4),
               ),
-              border: Border.all(color: Colors.white.withOpacity(0.06)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -471,7 +471,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin, 
       decoration: BoxDecoration(
         color: const Color(0xFF0F0F18),
         border: Border(
-          top: BorderSide(color: Colors.white.withOpacity(0.06)),
+          top: BorderSide(color: Colors.white.withValues(alpha: 0.06)),
         ),
       ),
       child: Row(
@@ -495,7 +495,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin, 
                         ? [
                             BoxShadow(
                               color:
-                                  const Color(0xFFE63946).withOpacity(glow),
+                                  const Color(0xFFE63946).withValues(alpha: glow),
                               blurRadius: 20,
                               spreadRadius: 5,
                             ),
@@ -519,7 +519,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin, 
               decoration: BoxDecoration(
                 color: const Color(0xFF1A1A2E),
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: Colors.white.withOpacity(0.08)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
               ),
               child: TextField(
                 controller: _textController,

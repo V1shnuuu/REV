@@ -193,7 +193,7 @@ class _StepGuideScreenState extends State<StepGuideScreen>
               onTap: () => Navigator.pop(context),
               child: Container(
                 padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(color: Colors.white.withOpacity(0.08), borderRadius: BorderRadius.circular(12)),
+                decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(12)),
                 child: const Icon(Icons.arrow_back_ios_new, color: Colors.white70, size: 18),
               ),
             ),
@@ -202,7 +202,7 @@ class _StepGuideScreenState extends State<StepGuideScreen>
           Semantics(
             label: 'Step ${_currentStep + 1} of ${cprSteps.length}',
             child: Text('STEP ${_currentStep + 1} OF ${cprSteps.length}',
-              style: GoogleFonts.inter(color: Colors.white.withOpacity(0.5), fontSize: 13, fontWeight: FontWeight.w600, letterSpacing: 2)),
+              style: GoogleFonts.inter(color: Colors.white.withValues(alpha: 0.5), fontSize: 13, fontWeight: FontWeight.w600, letterSpacing: 2)),
           ),
           const Spacer(),
           Semantics(
@@ -212,7 +212,7 @@ class _StepGuideScreenState extends State<StepGuideScreen>
               onTap: _speakCurrentStep,
               child: Container(
                 padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(color: primaryRed.withOpacity(0.15), borderRadius: BorderRadius.circular(12)),
+                decoration: BoxDecoration(color: primaryRed.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(12)),
                 child: const Icon(Icons.volume_up, color: primaryRed, size: 18),
               ),
             ),
@@ -232,7 +232,7 @@ class _StepGuideScreenState extends State<StepGuideScreen>
             child: Container(
               height: 4, margin: const EdgeInsets.symmetric(horizontal: 2),
               decoration: BoxDecoration(borderRadius: BorderRadius.circular(2),
-                color: i <= _currentStep ? primaryRed : Colors.white.withOpacity(0.1)),
+                color: i <= _currentStep ? primaryRed : Colors.white.withValues(alpha: 0.1)),
             ),
           )),
         ),
@@ -249,7 +249,7 @@ class _StepGuideScreenState extends State<StepGuideScreen>
           if (_currentStep > 0) ...[
             Expanded(child: SizedBox(height: 48, child: OutlinedButton(
               onPressed: _goToPreviousStep,
-              style: OutlinedButton.styleFrom(side: BorderSide(color: Colors.white.withOpacity(0.2)),
+              style: OutlinedButton.styleFrom(side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
               child: Text('BACK', style: GoogleFonts.inter(color: Colors.white70, fontWeight: FontWeight.w600, letterSpacing: 1.5)),
             ))),
@@ -299,10 +299,10 @@ class _StepGuideScreenState extends State<StepGuideScreen>
                       height: isSmallScreen ? 60 : 80,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: primaryRed.withOpacity(0.12),
+                        color: primaryRed.withValues(alpha: 0.12),
                         boxShadow: [
                           BoxShadow(
-                            color: primaryRed.withOpacity(0.1 + _iconPulseController.value * 0.15),
+                            color: primaryRed.withValues(alpha: 0.1 + _iconPulseController.value * 0.15),
                             blurRadius: isSmallScreen ? 20 : 30,
                             spreadRadius: 5
                           )
@@ -325,11 +325,11 @@ class _StepGuideScreenState extends State<StepGuideScreen>
                     decoration: BoxDecoration(
                       color: cardColor,
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.white.withOpacity(0.06))
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.06))
                     ),
                     child: Text(
                       step.instruction,
-                      style: GoogleFonts.inter(color: Colors.white.withOpacity(0.85), fontSize: isSmallScreen ? 14 : 16, fontWeight: FontWeight.w500, height: 1.4),
+                      style: GoogleFonts.inter(color: Colors.white.withValues(alpha: 0.85), fontSize: isSmallScreen ? 14 : 16, fontWeight: FontWeight.w500, height: 1.4),
                       textAlign: TextAlign.center
                     )
                   ),
@@ -370,7 +370,7 @@ class _StepGuideScreenState extends State<StepGuideScreen>
                             ElevatedButton(
                               onPressed: _startSimulation,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: primaryRed.withOpacity(0.2),
+                                backgroundColor: primaryRed.withValues(alpha: 0.2),
                                 foregroundColor: primaryRed,
                                 side: const BorderSide(color: primaryRed),
                                 padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
@@ -419,8 +419,8 @@ class _StepGuideScreenState extends State<StepGuideScreen>
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(color: Colors.white.withOpacity(0.04), borderRadius: BorderRadius.circular(16)),
-                      child: Text(step.detail!, style: GoogleFonts.inter(color: Colors.white.withOpacity(0.5), fontSize: 12, height: 1.4))
+                      decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.04), borderRadius: BorderRadius.circular(16)),
+                      child: Text(step.detail!, style: GoogleFonts.inter(color: Colors.white.withValues(alpha: 0.5), fontSize: 12, height: 1.4))
                     ),
                   ],
                   if (_aiTip != null) ...[
@@ -429,14 +429,14 @@ class _StepGuideScreenState extends State<StepGuideScreen>
                       width: double.infinity,
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: successColor.withOpacity(0.08),
+                        color: successColor.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: successColor.withOpacity(0.2))
+                        border: Border.all(color: successColor.withValues(alpha: 0.2))
                       ),
                       child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                         const Icon(Icons.auto_awesome, color: successColor, size: 14),
                         const SizedBox(width: 8),
-                        Expanded(child: Text(_aiTip!, style: GoogleFonts.inter(color: Colors.white.withOpacity(0.7), fontSize: 11, height: 1.3))),
+                        Expanded(child: Text(_aiTip!, style: GoogleFonts.inter(color: Colors.white.withValues(alpha: 0.7), fontSize: 11, height: 1.3))),
                       ])),
                   ],
                   SizedBox(height: isSmallScreen ? 8 : 16),

@@ -142,7 +142,7 @@ class _TriageScreenState extends State<TriageScreen> {
             onTap: () => Navigator.pop(context),
             child: Container(
               padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(color: Colors.white.withOpacity(0.08), borderRadius: BorderRadius.circular(12)),
+              decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(12)),
               child: const Icon(Icons.close, color: Colors.white70, size: 18),
             ),
           ),
@@ -159,7 +159,7 @@ class _TriageScreenState extends State<TriageScreen> {
     return Column(
       children: [
         const SizedBox(height: 24),
-        Icon(Icons.record_voice_over, color: const Color(0xFFE63946).withOpacity(0.4), size: 64),
+        Icon(Icons.record_voice_over, color: const Color(0xFFE63946).withValues(alpha: 0.4), size: 64),
         const SizedBox(height: 20),
         Text(
           "What's happening?",
@@ -181,7 +181,7 @@ class _TriageScreenState extends State<TriageScreen> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: _isListening ? const Color(0xFFE63946) : const Color(0xFF1A1A2E),
-              border: Border.all(color: const Color(0xFFE63946).withOpacity(0.5), width: 2),
+              border: Border.all(color: const Color(0xFFE63946).withValues(alpha: 0.5), width: 2),
             ),
             child: Icon(_isListening ? Icons.mic : Icons.mic_none, color: Colors.white, size: 36),
           ),
@@ -218,9 +218,9 @@ class _TriageScreenState extends State<TriageScreen> {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: const Color(0xFF3498DB).withOpacity(0.12),
+            color: const Color(0xFF3498DB).withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFF3498DB).withOpacity(0.3)),
+            border: Border.all(color: const Color(0xFF3498DB).withValues(alpha: 0.3)),
           ),
           child: Row(
             children: [
@@ -247,7 +247,7 @@ class _TriageScreenState extends State<TriageScreen> {
                     width: 24,
                     height: 24,
                     alignment: Alignment.center,
-                    decoration: BoxDecoration(color: Colors.white.withOpacity(0.08), shape: BoxShape.circle),
+                    decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.08), shape: BoxShape.circle),
                     child: Text('${entry.key + 1}', style: GoogleFonts.inter(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w700)),
                   ),
                   const SizedBox(width: 12),
@@ -285,7 +285,7 @@ class _TriageScreenState extends State<TriageScreen> {
         child: OutlinedButton(
           onPressed: _goToCpr,
           style: OutlinedButton.styleFrom(
-            side: BorderSide(color: Colors.white.withOpacity(0.3)),
+            side: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           ),
           child: Row(

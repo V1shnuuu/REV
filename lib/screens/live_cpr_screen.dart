@@ -375,9 +375,9 @@ class _LiveCprScreenState extends State<LiveCprScreen>
                                   Container(
                                     padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 20),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFFE63946).withOpacity(0.1),
+                                      color: const Color(0xFFE63946).withValues(alpha: 0.1),
                                       borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(color: const Color(0xFFE63946).withOpacity(0.2)),
+                                      border: Border.all(color: const Color(0xFFE63946).withValues(alpha: 0.2)),
                                     ),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
@@ -385,7 +385,7 @@ class _LiveCprScreenState extends State<LiveCprScreen>
                                         Text(
                                           'CYCLE PROGRESS: ',
                                           style: GoogleFonts.inter(
-                                            color: const Color(0xFFE63946).withOpacity(0.7),
+                                            color: const Color(0xFFE63946).withValues(alpha: 0.7),
                                             fontSize: 10,
                                             fontWeight: FontWeight.w700,
                                             letterSpacing: 1.5,
@@ -449,12 +449,12 @@ class _LiveCprScreenState extends State<LiveCprScreen>
             color: const Color(0xFF1A1A2E),
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: const Color(0xFF2ECC71).withOpacity(0.5),
+              color: const Color(0xFF2ECC71).withValues(alpha: 0.5),
               width: 1.5,
             ),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF2ECC71).withOpacity(glow),
+                color: const Color(0xFF2ECC71).withValues(alpha: glow),
                 blurRadius: 15,
                 spreadRadius: 2,
               ),
@@ -524,10 +524,10 @@ class _LiveCprScreenState extends State<LiveCprScreen>
       margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1A2E).withOpacity(0.9),
+        color: const Color(0xFF1A1A2E).withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: const Color(0xFFE63946).withOpacity(0.3),
+          color: const Color(0xFFE63946).withValues(alpha: 0.3),
         ),
       ),
       child: Column(
@@ -592,7 +592,7 @@ class _LiveCprScreenState extends State<LiveCprScreen>
             },
             child: Container(
               padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(color: Colors.white.withOpacity(0.08), borderRadius: BorderRadius.circular(12)),
+              decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(12)),
               child: const Icon(Icons.close, color: Colors.white70, size: 18),
             ),
           ),
@@ -601,7 +601,7 @@ class _LiveCprScreenState extends State<LiveCprScreen>
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: const Color(0xFFE63946).withOpacity(0.15),
+                color: const Color(0xFFE63946).withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Row(children: [
@@ -633,9 +633,9 @@ class _LiveCprScreenState extends State<LiveCprScreen>
       margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF3498DB).withOpacity(0.15),
+        color: const Color(0xFF3498DB).withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF3498DB).withOpacity(0.3)),
+        border: Border.all(color: const Color(0xFF3498DB).withValues(alpha: 0.3)),
       ),
       child: Row(children: [
         const Icon(Icons.air, color: Color(0xFF3498DB), size: 28),
@@ -651,7 +651,7 @@ class _LiveCprScreenState extends State<LiveCprScreen>
 
   Widget _buildStartPrompt() {
     return Column(children: [
-      Icon(Icons.fitness_center, color: const Color(0xFFE63946).withOpacity(0.3), size: 80),
+      Icon(Icons.fitness_center, color: const Color(0xFFE63946).withValues(alpha: 0.3), size: 80),
       const SizedBox(height: 24),
       Text('READY TO START', style: GoogleFonts.outfit(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w800)),
       const SizedBox(height: 8),
@@ -669,7 +669,7 @@ class _LiveCprScreenState extends State<LiveCprScreen>
         child: ElevatedButton(
           onPressed: _isActive ? _stopSession : _startSession,
           style: ElevatedButton.styleFrom(
-            backgroundColor: _isActive ? Colors.white.withOpacity(0.1) : const Color(0xFFE63946),
+            backgroundColor: _isActive ? Colors.white.withValues(alpha: 0.1) : const Color(0xFFE63946),
             foregroundColor: Colors.white,
             elevation: 0,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),

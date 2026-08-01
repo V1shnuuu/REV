@@ -85,7 +85,7 @@ class _HomeScreenState extends State<HomeScreen>
                       center: Alignment.center,
                       radius: 1.2 + (_breatheController.value * 0.3),
                       colors: [
-                        const Color(0xFFE63946).withOpacity(0.08),
+                        const Color(0xFFE63946).withValues(alpha: 0.08),
                         const Color(0xFF0A0A0F),
                       ],
                     ),
@@ -114,10 +114,10 @@ class _HomeScreenState extends State<HomeScreen>
                     padding:
                         const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFE63946).withOpacity(0.15),
+                      color: const Color(0xFFE63946).withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: const Color(0xFFE63946).withOpacity(0.3),
+                        color: const Color(0xFFE63946).withValues(alpha: 0.3),
                       ),
                     ),
                     child: Text(
@@ -162,13 +162,13 @@ class _HomeScreenState extends State<HomeScreen>
                               boxShadow: [
                                 BoxShadow(
                                   color: const Color(0xFFE63946)
-                                      .withOpacity(glowOpacity),
+                                      .withValues(alpha: glowOpacity),
                                   blurRadius: 50,
                                   spreadRadius: 15,
                                 ),
                                 BoxShadow(
                                   color: const Color(0xFFE63946)
-                                      .withOpacity(glowOpacity * 0.5),
+                                      .withValues(alpha: glowOpacity * 0.5),
                                   blurRadius: 100,
                                   spreadRadius: 30,
                                 ),
@@ -195,7 +195,7 @@ class _HomeScreenState extends State<HomeScreen>
                                 Text(
                                   'CPR',
                                   style: GoogleFonts.outfit(
-                                    color: Colors.white.withOpacity(0.8),
+                                    color: Colors.white.withValues(alpha: 0.8),
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
                                     letterSpacing: 6,
@@ -218,7 +218,7 @@ class _HomeScreenState extends State<HomeScreen>
                     },
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                      side: BorderSide(color: Colors.white.withOpacity(0.3)),
+                      side: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                     ),
                     child: Row(
@@ -248,9 +248,9 @@ class _HomeScreenState extends State<HomeScreen>
                     },
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                      side: BorderSide(color: const Color(0xFFE63946).withOpacity(0.5)),
+                      side: BorderSide(color: const Color(0xFFE63946).withValues(alpha: 0.5)),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                      backgroundColor: const Color(0xFFE63946).withOpacity(0.08),
+                      backgroundColor: const Color(0xFFE63946).withValues(alpha: 0.08),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -278,17 +278,17 @@ class _HomeScreenState extends State<HomeScreen>
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.05),
+                        color: Colors.white.withValues(alpha: 0.05),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: Colors.white.withOpacity(0.08),
+                          color: Colors.white.withValues(alpha: 0.08),
                         ),
                       ),
                       child: Row(
                         children: [
                           Icon(
                             Icons.info_outline,
-                            color: Colors.white.withOpacity(0.3),
+                            color: Colors.white.withValues(alpha: 0.3),
                             size: 18,
                           ),
                           const SizedBox(width: 12),
@@ -296,7 +296,7 @@ class _HomeScreenState extends State<HomeScreen>
                             child: Text(
                               'For guidance only. Not a substitute for professional training. Always call ${AppConfig.emergencyNumber} first.',
                               style: GoogleFonts.inter(
-                                color: Colors.white.withOpacity(0.3),
+                                color: Colors.white.withValues(alpha: 0.3),
                                 fontSize: 11,
                                 height: 1.4,
                               ),

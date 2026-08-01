@@ -198,9 +198,9 @@ class _CprBodyPainter extends CustomPainter {
     final glowPaint = Paint()
       ..shader = RadialGradient(
         colors: [
-          accentColor.withOpacity(glowValue * 0.6),
-          accentColor.withOpacity(glowValue * 0.2),
-          accentColor.withOpacity(0.0),
+          accentColor.withValues(alpha: glowValue * 0.6),
+          accentColor.withValues(alpha: glowValue * 0.2),
+          accentColor.withValues(alpha: 0.0),
         ],
         stops: const [0.0, 0.5, 1.0],
       ).createShader(Rect.fromCircle(center: glowCenter, radius: 80));
@@ -211,7 +211,7 @@ class _CprBodyPainter extends CustomPainter {
   void _drawTorso(Canvas canvas, double cx, double torsoTop, Size size,
       double depth) {
     final bodyPaint = Paint()
-      ..color = Colors.white.withOpacity(0.12)
+      ..color = Colors.white.withValues(alpha: 0.12)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.0
       ..strokeCap = StrokeCap.round;
@@ -297,7 +297,7 @@ class _CprBodyPainter extends CustomPainter {
 
     // --- Rib hints ---
     final ribPaint = Paint()
-      ..color = Colors.white.withOpacity(0.06)
+      ..color = Colors.white.withValues(alpha: 0.06)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0;
 
@@ -317,7 +317,7 @@ class _CprBodyPainter extends CustomPainter {
 
     // --- Sternum ---
     final sternumPaint = Paint()
-      ..color = Colors.white.withOpacity(0.08)
+      ..color = Colors.white.withValues(alpha: 0.08)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5;
 
@@ -337,7 +337,7 @@ class _CprBodyPainter extends CustomPainter {
       final rippleRadius = 32.0 + rippleValue * 80.0;
       final rippleOpacity = (1.0 - rippleValue) * 0.5;
       final ripplePaint = Paint()
-        ..color = accentColor.withOpacity(rippleOpacity)
+        ..color = accentColor.withValues(alpha: rippleOpacity)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 2.0;
       canvas.drawCircle(highlightCenter, rippleRadius, ripplePaint);
@@ -345,7 +345,7 @@ class _CprBodyPainter extends CustomPainter {
 
     // Outer ring
     final ringPaint = Paint()
-      ..color = accentColor.withOpacity(0.15 + glowValue * 0.2)
+      ..color = accentColor.withValues(alpha: 0.15 + glowValue * 0.2)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5;
 
@@ -353,7 +353,7 @@ class _CprBodyPainter extends CustomPainter {
 
     // Inner dashed circle
     final innerPaint = Paint()
-      ..color = accentColor.withOpacity(0.3 + glowValue * 0.3)
+      ..color = accentColor.withValues(alpha: 0.3 + glowValue * 0.3)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.0;
 
@@ -373,7 +373,7 @@ class _CprBodyPainter extends CustomPainter {
 
     // Center dot
     final dotPaint = Paint()
-      ..color = accentColor.withOpacity(0.4 + glowValue * 0.4);
+      ..color = accentColor.withValues(alpha: 0.4 + glowValue * 0.4);
     canvas.drawCircle(highlightCenter, 4, dotPaint);
   }
 
@@ -383,7 +383,7 @@ class _CprBodyPainter extends CustomPainter {
 
     // Hand shadow
     final shadowPaint = Paint()
-      ..color = Colors.black.withOpacity(0.3 * compressionValue);
+      ..color = Colors.black.withValues(alpha: 0.3 * compressionValue);
     canvas.drawOval(
       Rect.fromCenter(center: Offset(cx, handY + 35), width: 50, height: 10),
       shadowPaint,
@@ -391,7 +391,7 @@ class _CprBodyPainter extends CustomPainter {
 
     // Single merged hand shape (representing interlocked hands)
     final handPaint = Paint()
-      ..color = Colors.white.withOpacity(0.8 + compressionValue * 0.2)
+      ..color = Colors.white.withValues(alpha: 0.8 + compressionValue * 0.2)
       ..style = PaintingStyle.fill;
 
     final handRRect = RRect.fromRectAndRadius(
@@ -402,14 +402,14 @@ class _CprBodyPainter extends CustomPainter {
 
     // Hand outline
     final handOutline = Paint()
-      ..color = accentColor.withOpacity(0.5 + compressionValue * 0.5)
+      ..color = accentColor.withValues(alpha: 0.5 + compressionValue * 0.5)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.0;
     canvas.drawRRect(handRRect, handOutline);
 
     // Subtle interlock line in the middle
     final interlockPaint = Paint()
-      ..color = accentColor.withOpacity(0.2)
+      ..color = accentColor.withValues(alpha: 0.2)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0;
     canvas.drawLine(
@@ -430,7 +430,7 @@ class _CprBodyPainter extends CustomPainter {
 
     // Arms coming from above
     final armPaint = Paint()
-      ..color = Colors.white.withOpacity(0.2)
+      ..color = Colors.white.withValues(alpha: 0.2)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3.0
       ..strokeCap = StrokeCap.round;
@@ -455,7 +455,7 @@ class _CprBodyPainter extends CustomPainter {
     final arrowShift = arrowValue * 12.0;
 
     final arrowPaint = Paint()
-      ..color = accentColor.withOpacity(arrowOpacity)
+      ..color = accentColor.withValues(alpha: arrowOpacity)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.0
       ..strokeCap = StrokeCap.round;
@@ -510,7 +510,7 @@ class _CprBodyPainter extends CustomPainter {
 
     // Center large arrow above hands
     final bigArrowPaint = Paint()
-      ..color = accentColor.withOpacity(arrowOpacity * 0.8)
+      ..color = accentColor.withValues(alpha: arrowOpacity * 0.8)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.5
       ..strokeCap = StrokeCap.round;

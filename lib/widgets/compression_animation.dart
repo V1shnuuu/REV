@@ -39,7 +39,7 @@ class CompressionAnimation extends StatelessWidget {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: color.withOpacity(opacity * 0.15),
+                          color: color.withValues(alpha: opacity * 0.15),
                           width: 2,
                         ),
                       ),
@@ -54,7 +54,7 @@ class CompressionAnimation extends StatelessWidget {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: color.withOpacity(opacity * 0.25),
+                          color: color.withValues(alpha: opacity * 0.25),
                           width: 2,
                         ),
                       ),
@@ -69,7 +69,7 @@ class CompressionAnimation extends StatelessWidget {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: color.withOpacity(opacity * 0.4),
+                          color: color.withValues(alpha: opacity * 0.4),
                           width: 2.5,
                         ),
                       ),
@@ -85,7 +85,7 @@ class CompressionAnimation extends StatelessWidget {
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: color.withOpacity(0.4),
+                            color: color.withValues(alpha: 0.4),
                             blurRadius: 40,
                             spreadRadius: 10,
                           ),
@@ -104,13 +104,13 @@ class CompressionAnimation extends StatelessWidget {
                         gradient: RadialGradient(
                           colors: [
                             color,
-                            color.withOpacity(0.7),
+                            color.withValues(alpha: 0.7),
                           ],
                           center: const Alignment(-0.2, -0.2),
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: color.withOpacity(0.6),
+                            color: color.withValues(alpha: 0.6),
                             blurRadius: 20,
                             spreadRadius: 2,
                           ),
@@ -122,14 +122,14 @@ class CompressionAnimation extends StatelessWidget {
                           children: [
                             Icon(
                               Icons.favorite,
-                              color: Colors.white.withOpacity(0.9),
+                              color: Colors.white.withValues(alpha: 0.9),
                               size: 48,
                             ),
                             const SizedBox(height: 4),
                             Text(
                               'PUSH',
                               style: TextStyle(
-                                color: Colors.white.withOpacity(0.9),
+                                color: Colors.white.withValues(alpha: 0.9),
                                 fontSize: 18,
                                 fontWeight: FontWeight.w800,
                                 letterSpacing: 3,

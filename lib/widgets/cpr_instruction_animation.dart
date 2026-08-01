@@ -459,9 +459,9 @@ class _InstructionPainter extends CustomPainter {
       center: Alignment(0, -0.3 + (depth * 0.01) - (chestExpansion * 0.1)),
       radius: 1.5 + chestExpansion * 0.2,
       colors: [
-        Colors.white.withOpacity(0.15 + chestExpansion * 0.05),
-        Colors.white.withOpacity(0.05 + chestExpansion * 0.05),
-        Colors.white.withOpacity(0.0),
+        Colors.white.withValues(alpha: 0.15 + chestExpansion * 0.05),
+        Colors.white.withValues(alpha: 0.05 + chestExpansion * 0.05),
+        Colors.white.withValues(alpha: 0.0),
       ],
       stops: const [0.0, 0.6, 1.0],
     ).createShader(torsoFillPath.getBounds());
@@ -470,7 +470,7 @@ class _InstructionPainter extends CustomPainter {
 
     // Dark inner shadow to round the edges
     final shadowPaint = Paint()
-      ..color = Colors.black.withOpacity(0.4)
+      ..color = Colors.black.withValues(alpha: 0.4)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 10
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
@@ -478,7 +478,7 @@ class _InstructionPainter extends CustomPainter {
 
     // Highlight top edge for 3D bevel
     final highlightPaint = Paint()
-      ..color = Colors.white.withOpacity(0.2)
+      ..color = Colors.white.withValues(alpha: 0.2)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2);
@@ -493,7 +493,7 @@ class _InstructionPainter extends CustomPainter {
     final headGradient = RadialGradient(
       center: const Alignment(-0.2, -0.2),
       radius: 1.0,
-      colors: [Colors.white.withOpacity(0.2), Colors.white.withOpacity(0.02)],
+      colors: [Colors.white.withValues(alpha: 0.2), Colors.white.withValues(alpha: 0.02)],
     ).createShader(Rect.fromCircle(center: Offset(cx, headY), radius: 22));
     canvas.drawCircle(Offset(cx, headY), 22, Paint()..shader = headGradient);
     canvas.drawCircle(Offset(cx, headY), 22, shadowPaint..strokeWidth = 6);
@@ -502,10 +502,10 @@ class _InstructionPainter extends CustomPainter {
     if (headTilt > 0.01) {
       final handOpacity = headTilt.clamp(0.0, 1.0);
       final hPaint = Paint()
-        ..color = Colors.white.withOpacity(0.4 * handOpacity)
+        ..color = Colors.white.withValues(alpha: 0.4 * handOpacity)
         ..style = PaintingStyle.fill;
       final hBorder = Paint()
-        ..color = Colors.white.withOpacity(0.6 * handOpacity)
+        ..color = Colors.white.withValues(alpha: 0.6 * handOpacity)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1;
 
@@ -530,7 +530,7 @@ class _InstructionPainter extends CustomPainter {
       if (chestExpansion > 0.01) {
         final airOpacity = chestExpansion.clamp(0.0, 1.0);
         final airPaint = Paint()
-          ..color = accentColor.withOpacity(airOpacity * 0.8)
+          ..color = accentColor.withValues(alpha: airOpacity * 0.8)
           ..style = PaintingStyle.stroke
           ..strokeWidth = 2.0
           ..strokeCap = StrokeCap.round;
@@ -546,12 +546,12 @@ class _InstructionPainter extends CustomPainter {
 
     // Soft indented ribs
     final ribPaint = Paint()
-      ..color = Colors.black.withOpacity(0.3)
+      ..color = Colors.black.withValues(alpha: 0.3)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3.0
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2);
     final ribHighlight = Paint()
-      ..color = Colors.white.withOpacity(0.05)
+      ..color = Colors.white.withValues(alpha: 0.05)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.0;
 
@@ -592,16 +592,16 @@ class _InstructionPainter extends CustomPainter {
     final sternumY = torsoTop + 130;
 
     final centerGlow = Paint()
-      ..color = accentColor.withOpacity(opacity * 0.5)
+      ..color = accentColor.withValues(alpha: opacity * 0.5)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 15);
     canvas.drawCircle(Offset(cx, sternumY), 25, centerGlow);
 
-    final dot = Paint()..color = Colors.white.withOpacity(opacity);
+    final dot = Paint()..color = Colors.white.withValues(alpha: opacity);
     canvas.drawCircle(Offset(cx, sternumY), 4, dot);
 
     // Crosshairs
     final crossHair = Paint()
-      ..color = accentColor.withOpacity(opacity)
+      ..color = accentColor.withValues(alpha: opacity)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5;
     canvas.drawLine(
@@ -630,7 +630,7 @@ class _InstructionPainter extends CustomPainter {
       text: TextSpan(
         text: 'CENTER OF CHEST',
         style: TextStyle(
-          color: accentColor.withOpacity(opacity),
+          color: accentColor.withValues(alpha: opacity),
           fontSize: 10,
           fontWeight: FontWeight.bold,
           letterSpacing: 1,
@@ -707,7 +707,7 @@ class _InstructionPainter extends CustomPainter {
     canvas.drawRRect(
       bottomHand.shift(Offset(0, shadowOffset)),
       Paint()
-        ..color = Colors.black.withOpacity(shadowOpacity)
+        ..color = Colors.black.withValues(alpha: shadowOpacity)
         ..maskFilter = MaskFilter.blur(BlurStyle.normal, shadowBlur),
     );
 
@@ -721,7 +721,7 @@ class _InstructionPainter extends CustomPainter {
       canvas.drawPath(
         fingerPath,
         Paint()
-          ..color = Colors.white.withOpacity(currentOpacity)
+          ..color = Colors.white.withValues(alpha: currentOpacity)
           ..style = PaintingStyle.stroke
           ..strokeWidth = 2.0
           ..strokeCap = StrokeCap.round,
@@ -734,8 +734,8 @@ class _InstructionPainter extends CustomPainter {
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: [
-          Colors.white.withOpacity(0.9 * currentOpacity),
-          const Color(0xFFD0D0D0).withOpacity(0.9 * currentOpacity),
+          Colors.white.withValues(alpha: 0.9 * currentOpacity),
+          const Color(0xFFD0D0D0).withValues(alpha: 0.9 * currentOpacity),
         ],
       ).createShader(bottomHandRect);
 
@@ -744,13 +744,13 @@ class _InstructionPainter extends CustomPainter {
     canvas.drawRRect(
       bottomHand,
       Paint()
-        ..color = Colors.white.withOpacity(0.5 * currentOpacity)
+        ..color = Colors.white.withValues(alpha: 0.5 * currentOpacity)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.0,
     );
 
     final heelHighlight = Paint()
-      ..color = accentColor.withOpacity(0.6 * currentOpacity)
+      ..color = accentColor.withValues(alpha: 0.6 * currentOpacity)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12);
     canvas.drawCircle(Offset(leftX, handY + 12), 16, heelHighlight);
 
@@ -769,7 +769,7 @@ class _InstructionPainter extends CustomPainter {
     canvas.drawRRect(
       topHand.shift(const Offset(0, 4)),
       Paint()
-        ..color = Colors.black.withOpacity(0.4 * currentOpacity)
+        ..color = Colors.black.withValues(alpha: 0.4 * currentOpacity)
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4),
     );
 
@@ -797,7 +797,7 @@ class _InstructionPainter extends CustomPainter {
       canvas.drawPath(
         fingerPath.shift(const Offset(2, 0)),
         Paint()
-          ..color = Colors.black.withOpacity(0.3 * currentOpacity)
+          ..color = Colors.black.withValues(alpha: 0.3 * currentOpacity)
           ..style = PaintingStyle.stroke
           ..strokeWidth = 3.0
           ..strokeCap = StrokeCap.round
@@ -807,7 +807,7 @@ class _InstructionPainter extends CustomPainter {
       canvas.drawPath(
         fingerPath,
         Paint()
-          ..color = Colors.white.withOpacity(currentOpacity)
+          ..color = Colors.white.withValues(alpha: currentOpacity)
           ..style = PaintingStyle.stroke
           ..strokeWidth = 2.0
           ..strokeCap = StrokeCap.round,
@@ -819,8 +819,8 @@ class _InstructionPainter extends CustomPainter {
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [
-          Colors.white.withOpacity(0.95 * currentOpacity),
-          const Color(0xFFB0B0B0).withOpacity(0.95 * currentOpacity),
+          Colors.white.withValues(alpha: 0.95 * currentOpacity),
+          const Color(0xFFB0B0B0).withValues(alpha: 0.95 * currentOpacity),
         ],
       ).createShader(topHandRect);
 
@@ -829,7 +829,7 @@ class _InstructionPainter extends CustomPainter {
     canvas.drawRRect(
       topHand,
       Paint()
-        ..color = Colors.white.withOpacity(0.8 * currentOpacity)
+        ..color = Colors.white.withValues(alpha: 0.8 * currentOpacity)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.0,
     );
@@ -849,7 +849,7 @@ class _InstructionPainter extends CustomPainter {
 
     // 3D Arms using thick lines with gradients and shadows
     final armShadow = Paint()
-      ..color = Colors.black.withOpacity(0.5 * opacity)
+      ..color = Colors.black.withValues(alpha: 0.5 * opacity)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 14.0
       ..strokeCap = StrokeCap.round
@@ -866,7 +866,7 @@ class _InstructionPainter extends CustomPainter {
 
     // Angle/Posture indicator
     final indicatorPaint = Paint()
-      ..color = accentColor.withOpacity(opacity)
+      ..color = accentColor.withValues(alpha: opacity)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5;
 
@@ -880,7 +880,7 @@ class _InstructionPainter extends CustomPainter {
       text: TextSpan(
         text: 'STRAIGHT ARMS\nLOCKED ELBOWS',
         style: TextStyle(
-          color: accentColor.withOpacity(opacity),
+          color: accentColor.withValues(alpha: opacity),
           fontSize: 9,
           fontWeight: FontWeight.bold,
           letterSpacing: 1,
@@ -914,9 +914,9 @@ class _InstructionPainter extends CustomPainter {
     final armPaint = Paint()
       ..shader = LinearGradient(
         colors: [
-          Colors.white.withOpacity(0.1 * opacity),
-          Colors.white.withOpacity(0.5 * opacity),
-          Colors.white.withOpacity(0.1 * opacity),
+          Colors.white.withValues(alpha: 0.1 * opacity),
+          Colors.white.withValues(alpha: 0.5 * opacity),
+          Colors.white.withValues(alpha: 0.1 * opacity),
         ],
         stops: const [0.0, 0.5, 1.0],
       ).createShader(Rect.fromPoints(p1, p2))
@@ -935,7 +935,7 @@ class _InstructionPainter extends CustomPainter {
     double opacity,
   ) {
     final arrowPaint = Paint()
-      ..color = accentColor.withOpacity(
+      ..color = accentColor.withValues(alpha: 
         opacity * (0.3 + 0.7 * compressionValue),
       )
       ..style = PaintingStyle.stroke
@@ -955,7 +955,7 @@ class _InstructionPainter extends CustomPainter {
       text: TextSpan(
         text: '~5 CM DEPTH',
         style: TextStyle(
-          color: accentColor.withOpacity(opacity),
+          color: accentColor.withValues(alpha: opacity),
           fontSize: 9,
           fontWeight: FontWeight.bold,
         ),
@@ -976,7 +976,7 @@ class _InstructionPainter extends CustomPainter {
     final rippleRadius = 30.0 + rippleValue * 90.0;
     final rippleOpacity = (1.0 - rippleValue) * 0.6 * opacity;
     final ripplePaint = Paint()
-      ..color = accentColor.withOpacity(rippleOpacity)
+      ..color = accentColor.withValues(alpha: rippleOpacity)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.5;
     canvas.drawCircle(

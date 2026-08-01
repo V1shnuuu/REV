@@ -50,15 +50,15 @@ class BpmGauge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1A2E).withOpacity(0.8),
+        color: const Color(0xFF1A1A2E).withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: _statusColor.withOpacity(0.3),
+          color: _statusColor.withValues(alpha: 0.3),
           width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: _statusColor.withOpacity(0.1),
+            color: _statusColor.withValues(alpha: 0.1),
             blurRadius: 20,
             spreadRadius: 2,
           ),
@@ -96,7 +96,7 @@ class BpmGauge extends StatelessWidget {
               Container(
                 width: 1,
                 height: 40,
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
               ),
               _buildMetric(
                 'COMPRESSIONS',
@@ -115,7 +115,7 @@ class BpmGauge extends StatelessWidget {
                 children: [
                   // Background
                   Container(
-                    color: Colors.white.withOpacity(0.1),
+                    color: Colors.white.withValues(alpha: 0.1),
                   ),
                   // Target zone (100-120 BPM mapped to 0-1)
                   FractionallySizedBox(
@@ -127,21 +127,21 @@ class BpmGauge extends StatelessWidget {
                         Expanded(
                           flex: 100,
                           child: Container(
-                            color: const Color(0xFFF39C12).withOpacity(0.3),
+                            color: const Color(0xFFF39C12).withValues(alpha: 0.3),
                           ),
                         ),
                         // Good zone
                         Expanded(
                           flex: 20,
                           child: Container(
-                            color: const Color(0xFF2ECC71).withOpacity(0.5),
+                            color: const Color(0xFF2ECC71).withValues(alpha: 0.5),
                           ),
                         ),
                         // Too fast zone
                         Expanded(
                           flex: 80,
                           child: Container(
-                            color: const Color(0xFFE74C3C).withOpacity(0.3),
+                            color: const Color(0xFFE74C3C).withValues(alpha: 0.3),
                           ),
                         ),
                       ],
@@ -178,14 +178,14 @@ class BpmGauge extends StatelessWidget {
               Text(
                 '60',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.3),
+                  color: Colors.white.withValues(alpha: 0.3),
                   fontSize: 10,
                 ),
               ),
               Text(
                 'TARGET: 100-120',
                 style: TextStyle(
-                  color: const Color(0xFF2ECC71).withOpacity(0.5),
+                  color: const Color(0xFF2ECC71).withValues(alpha: 0.5),
                   fontSize: 10,
                   fontWeight: FontWeight.w600,
                 ),
@@ -193,7 +193,7 @@ class BpmGauge extends StatelessWidget {
               Text(
                 '200',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.3),
+                  color: Colors.white.withValues(alpha: 0.3),
                   fontSize: 10,
                 ),
               ),
@@ -223,7 +223,7 @@ class BpmGauge extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            color: Colors.white.withOpacity(0.4),
+            color: Colors.white.withValues(alpha: 0.4),
             fontSize: 11,
             fontWeight: FontWeight.w600,
             letterSpacing: 1.5,

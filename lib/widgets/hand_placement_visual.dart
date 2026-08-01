@@ -40,7 +40,7 @@ class _HandPlacementVisualState extends State<HandPlacementVisual>
             color: const Color(0xFF1A1A2E),
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: const Color(0xFFE63946).withOpacity(0.2),
+              color: const Color(0xFFE63946).withValues(alpha: 0.2),
               width: 1,
             ),
           ),
@@ -69,7 +69,7 @@ class _HandPlacementVisualState extends State<HandPlacementVisual>
                     boxShadow: [
                       BoxShadow(
                         color:
-                            const Color(0xFFE63946).withOpacity(glowIntensity),
+                            const Color(0xFFE63946).withValues(alpha: glowIntensity),
                         blurRadius: 20,
                         spreadRadius: 5,
                       ),
@@ -91,7 +91,7 @@ class _HandPlacementVisualState extends State<HandPlacementVisual>
                   children: [
                     Icon(
                       Icons.keyboard_double_arrow_down,
-                      color: Color(0xFFE63946).withOpacity(glowIntensity + 0.2),
+                      color: Color(0xFFE63946).withValues(alpha: glowIntensity + 0.2),
                       size: 30,
                     ),
                   ],
@@ -104,7 +104,7 @@ class _HandPlacementVisualState extends State<HandPlacementVisual>
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE63946).withOpacity(0.15),
+                    color: const Color(0xFFE63946).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: const Text(
@@ -134,7 +134,7 @@ class _ChestDiagramPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.white.withOpacity(0.15)
+      ..color = Colors.white.withValues(alpha: 0.15)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;
 
@@ -157,7 +157,7 @@ class _ChestDiagramPainter extends CustomPainter {
 
     // Rib cage hint lines
     final ribPaint = Paint()
-      ..color = Colors.white.withOpacity(0.08)
+      ..color = Colors.white.withValues(alpha: 0.08)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1;
 
@@ -175,7 +175,7 @@ class _ChestDiagramPainter extends CustomPainter {
 
     // Sternum line
     final sternumPaint = Paint()
-      ..color = Colors.white.withOpacity(0.1)
+      ..color = Colors.white.withValues(alpha: 0.1)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5;
     canvas.drawLine(Offset(cx, 85), Offset(cx, 230), sternumPaint);

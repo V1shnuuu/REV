@@ -23,12 +23,12 @@ class DisclaimerDialog extends StatelessWidget {
           color: const Color(0xFF1A1A2E),
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: const Color(0xFFE63946).withOpacity(0.3),
+            color: const Color(0xFFE63946).withValues(alpha: 0.3),
             width: 1.5,
           ),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFFE63946).withOpacity(0.1),
+              color: const Color(0xFFE63946).withValues(alpha: 0.1),
               blurRadius: 30,
               spreadRadius: 5,
             ),
@@ -40,7 +40,7 @@ class DisclaimerDialog extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFFE63946).withOpacity(0.15),
+                color: const Color(0xFFE63946).withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -70,7 +70,7 @@ class DisclaimerDialog extends StatelessWidget {
               'The developers are not liable for any outcomes from using this app.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withValues(alpha: 0.7),
                 fontSize: 14,
                 height: 1.4,
               ),

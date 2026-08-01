@@ -1,7 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'theme/app_theme.dart';
+import 'screens/dev/design_preview_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/step_guide_screen.dart';
 import 'screens/live_cpr_screen.dart';
@@ -43,24 +44,13 @@ class ReviveApp extends StatelessWidget {
     return MaterialApp(
       title: 'Revive AI',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF0A0A0F),
-        colorScheme: const ColorScheme.dark(
-          primary: Color(0xFFE63946),
-          secondary: Color(0xFF2ECC71),
-          surface: Color(0xFF1A1A2E),
-          error: Color(0xFFE74C3C),
-        ),
-        textTheme: GoogleFonts.interTextTheme(
-          ThemeData.dark().textTheme,
-        ),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFF0A0A0F),
-          elevation: 0,
-        ),
-      ),
+      theme: AppTheme.light(),
+      darkTheme: AppTheme.dark(),
+      // Pinned to dark until Phase 3 migrates the screens onto semantic
+      // tokens. The screens still carry hardcoded dark-surface colors, so
+      // following the system setting today would render dark-on-light.
+      // Flip to ThemeMode.system once the screen migration lands.
+      themeMode: ThemeMode.dark,
       initialRoute: '/',
       routes: {
         '/': (context) => const HomeScreen(),
@@ -68,6 +58,7 @@ class ReviveApp extends StatelessWidget {
         '/triage': (context) => const TriageScreen(),
         '/live': (context) => const LiveCprScreen(),
         '/chat': (context) => const ChatScreen(),
+        DesignPreviewScreen.routeName: (context) => const DesignPreviewScreen(),
       },
     );
   }
