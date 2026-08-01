@@ -24,7 +24,13 @@ android {
         applicationId = "com.firstaid.cpr_coach"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        //
+        // Pinned to 26 (Android 8.0) rather than flutter.minSdkVersion because
+        // the `health` package requires it for Health Connect. This drops
+        // Android 5.0-7.1. Acceptable because Health Connect itself needs
+        // Android 14+ natively (or the Health Connect app on 13 and below), so
+        // the incident-logging feature could never have run on those devices.
+        minSdk = 26
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
