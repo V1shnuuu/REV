@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'theme/app_theme.dart';
+import 'screens/dev/component_showcase_screen.dart';
 import 'screens/dev/design_preview_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/step_guide_screen.dart';
@@ -60,6 +61,8 @@ class ReviveApp extends StatelessWidget {
         '/live': (context) => const LiveCprScreen(),
         '/chat': (context) => const ChatScreen(),
         DesignPreviewScreen.routeName: (context) => const DesignPreviewScreen(),
+        ComponentShowcaseScreen.routeName: (context) =>
+            const ComponentShowcaseScreen(),
       },
     );
   }
