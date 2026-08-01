@@ -113,62 +113,63 @@ class BpmGauge extends StatelessWidget {
               height: 6,
               child: LayoutBuilder(
                 builder: (context, constraints) => Stack(
-                children: [
-                  // Background
-                  Container(
-                    color: Colors.white.withValues(alpha: 0.1),
-                  ),
-                  // Target zone (100-120 BPM mapped to 0-1)
-                  FractionallySizedBox(
-                    alignment: Alignment.centerLeft,
-                    widthFactor: 1.0,
-                    child: Row(
-                      children: [
-                        // Too slow zone
-                        Expanded(
-                          flex: 100,
-                          child: Container(
-                            color: const Color(0xFFF39C12).withValues(alpha: 0.3),
-                          ),
-                        ),
-                        // Good zone
-                        Expanded(
-                          flex: 20,
-                          child: Container(
-                            color: const Color(0xFF2ECC71).withValues(alpha: 0.5),
-                          ),
-                        ),
-                        // Too fast zone
-                        Expanded(
-                          flex: 80,
-                          child: Container(
-                            color: const Color(0xFFE74C3C).withValues(alpha: 0.3),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Current BPM indicator
-                  if (reading.bpm > 0)
-                    Positioned(
-                      left: _bpmToPosition(reading.bpm, constraints.maxWidth),
-                      top: 0,
-                      bottom: 0,
-                      child: Container(
-                        width: _markerWidth,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(2),
-                          boxShadow: [
-                            BoxShadow(
-                              color: _statusColor,
-                              blurRadius: 6,
+                  children: [
+                    // Background
+                    Container(color: Colors.white.withValues(alpha: 0.1)),
+                    // Target zone (100-120 BPM mapped to 0-1)
+                    FractionallySizedBox(
+                      alignment: Alignment.centerLeft,
+                      widthFactor: 1.0,
+                      child: Row(
+                        children: [
+                          // Too slow zone
+                          Expanded(
+                            flex: 100,
+                            child: Container(
+                              color: const Color(
+                                0xFFF39C12,
+                              ).withValues(alpha: 0.3),
                             ),
-                          ],
-                        ),
+                          ),
+                          // Good zone
+                          Expanded(
+                            flex: 20,
+                            child: Container(
+                              color: const Color(
+                                0xFF2ECC71,
+                              ).withValues(alpha: 0.5),
+                            ),
+                          ),
+                          // Too fast zone
+                          Expanded(
+                            flex: 80,
+                            child: Container(
+                              color: const Color(
+                                0xFFE74C3C,
+                              ).withValues(alpha: 0.3),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                ],
+                    // Current BPM indicator
+                    if (reading.bpm > 0)
+                      Positioned(
+                        left: _bpmToPosition(reading.bpm, constraints.maxWidth),
+                        top: 0,
+                        bottom: 0,
+                        child: Container(
+                          width: _markerWidth,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(2),
+                            boxShadow: [
+                              BoxShadow(color: _statusColor, blurRadius: 6),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ),

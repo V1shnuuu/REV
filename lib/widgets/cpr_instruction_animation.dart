@@ -230,8 +230,8 @@ class _CprInstructionAnimationState extends State<CprInstructionAnimation>
                           transitionProgress: t,
                           compressionValue: _compressionAnim.value,
                           rippleValue: _rippleAnim.value,
-                          chestRiseValue: _chestRiseAnim.value ?? 0.0,
-                          headTiltValue: _headTiltAnim.value ?? 0.0,
+                          chestRiseValue: _chestRiseAnim.value,
+                          headTiltValue: _headTiltAnim.value,
                           accentColor: widget.accentColor,
                         ),
                       );
@@ -369,8 +369,9 @@ class _InstructionPainter extends CustomPainter {
       headTilt,
     );
 
-    if (locateOpacity > 0.0)
+    if (locateOpacity > 0.0) {
       _drawLocatePointer(canvas, cx, torsoTop, locateOpacity);
+    }
 
     if (motionOpacity > 0.0 && rippleValue > 0.0 && rippleValue < 1.0) {
       _drawRipple(canvas, cx, torsoTop, compressionDepth, motionOpacity);
@@ -493,7 +494,10 @@ class _InstructionPainter extends CustomPainter {
     final headGradient = RadialGradient(
       center: const Alignment(-0.2, -0.2),
       radius: 1.0,
-      colors: [Colors.white.withValues(alpha: 0.2), Colors.white.withValues(alpha: 0.02)],
+      colors: [
+        Colors.white.withValues(alpha: 0.2),
+        Colors.white.withValues(alpha: 0.02),
+      ],
     ).createShader(Rect.fromCircle(center: Offset(cx, headY), radius: 22));
     canvas.drawCircle(Offset(cx, headY), 22, Paint()..shader = headGradient);
     canvas.drawCircle(Offset(cx, headY), 22, shadowPaint..strokeWidth = 6);
@@ -935,8 +939,8 @@ class _InstructionPainter extends CustomPainter {
     double opacity,
   ) {
     final arrowPaint = Paint()
-      ..color = accentColor.withValues(alpha: 
-        opacity * (0.3 + 0.7 * compressionValue),
+      ..color = accentColor.withValues(
+        alpha: opacity * (0.3 + 0.7 * compressionValue),
       )
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.5

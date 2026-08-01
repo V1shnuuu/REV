@@ -30,7 +30,6 @@ class _LiveCprScreenState extends State<LiveCprScreen>
   final SttService _stt = SttService();
   final HealthConnectService _healthConnect = HealthConnectService();
 
-  BpmReading _currentReading = BpmReading.initial;
   bool _isActive = false;
   bool _showBreathPrompt = false;
   int _lastBreathPromptAt = 0;
@@ -90,7 +89,8 @@ class _LiveCprScreenState extends State<LiveCprScreen>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused || state == AppLifecycleState.detached) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached) {
       _audio.stopMetronome();
       _stt.stopListening();
       _tts.stop();
@@ -143,8 +143,8 @@ class _LiveCprScreenState extends State<LiveCprScreen>
   bool _isEmergencyPhrase(String text) {
     final lower = text.toLowerCase();
     return lower.contains(AppConfig.emergencyNumber) ||
-           lower.contains('emergency') ||
-           lower.contains('ambulance');
+        lower.contains('emergency') ||
+        lower.contains('ambulance');
   }
 
   void _setupBpmSubscription() {
@@ -164,7 +164,9 @@ class _LiveCprScreenState extends State<LiveCprScreen>
       if (mounted) setState(() => _elapsedSeconds++);
     });
 
-    _tts.speak('Follow the rhythm. Push hard and fast. Voice assistant is active. Just speak your question anytime.');
+    _tts.speak(
+      'Follow the rhythm. Push hard and fast. Voice assistant is active. Just speak your question anytime.',
+    );
     Future.delayed(const Duration(milliseconds: 5500), () {
       if (mounted && _isActive) {
         _startContinuousVoice();
@@ -199,7 +201,10 @@ class _LiveCprScreenState extends State<LiveCprScreen>
   /// brief confirmation if it succeeds; stays silent if Health Connect isn't
   /// available on this device (Play Store install of the Health Connect app
   /// is required on Android 13 and below).
-  Future<void> _logIncidentToHealthConnect(int compressionCount, Duration duration) async {
+  Future<void> _logIncidentToHealthConnect(
+    int compressionCount,
+    Duration duration,
+  ) async {
     final guidanceSummary = _ollama.isAvailable
         ? 'AI-adaptive voice guidance was used during this session.'
         : 'AI guidance was offline; static protocol coaching was used.';
@@ -262,7 +267,8 @@ class _LiveCprScreenState extends State<LiveCprScreen>
         // above (metronome, compression count, breath prompts) never depends
         // on this and keeps running regardless.
         final String response = _ollama.isAvailable
-            ? (await _ollama.emergencyChatAnswer(recognizedText)) ?? _offlineFallbackTip()
+            ? (await _ollama.emergencyChatAnswer(recognizedText)) ??
+                  _offlineFallbackTip()
             : _offlineFallbackTip();
 
         if (mounted) {
@@ -303,19 +309,27 @@ class _LiveCprScreenState extends State<LiveCprScreen>
 
   Color _getFeedbackColor(BpmStatus status) {
     switch (status) {
-      case BpmStatus.good: return const Color(0xFF2ECC71);
-      case BpmStatus.tooSlow: return const Color(0xFFF39C12);
-      case BpmStatus.tooFast: return const Color(0xFFE74C3C);
-      case BpmStatus.waiting: return const Color(0xFFE63946);
+      case BpmStatus.good:
+        return const Color(0xFF2ECC71);
+      case BpmStatus.tooSlow:
+        return const Color(0xFFF39C12);
+      case BpmStatus.tooFast:
+        return const Color(0xFFE74C3C);
+      case BpmStatus.waiting:
+        return const Color(0xFFE63946);
     }
   }
 
   String _getFeedbackText(BpmStatus status) {
     switch (status) {
-      case BpmStatus.good: return 'PERFECT RHYTHM';
-      case BpmStatus.tooSlow: return 'PUSH FASTER';
-      case BpmStatus.tooFast: return 'SLOW DOWN';
-      case BpmStatus.waiting: return 'FOLLOW THE RHYTHM';
+      case BpmStatus.good:
+        return 'PERFECT RHYTHM';
+      case BpmStatus.tooSlow:
+        return 'PUSH FASTER';
+      case BpmStatus.tooFast:
+        return 'SLOW DOWN';
+      case BpmStatus.waiting:
+        return 'FOLLOW THE RHYTHM';
     }
   }
 
@@ -360,24 +374,36 @@ class _LiveCprScreenState extends State<LiveCprScreen>
                                       _motion.simulateCompression();
                                     },
                                     child: SizedBox(
-                                      height: isSmall ? 150 : constraints.maxHeight * 0.45,
+                                      height: isSmall
+                                          ? 150
+                                          : constraints.maxHeight * 0.45,
                                       child: FittedBox(
                                         fit: BoxFit.contain,
                                         child: CprBodyAnimation(
                                           feedbackColor: statusColor,
                                           feedbackText: statusText,
-                                          compressionCount: reading.compressionCount,
+                                          compressionCount:
+                                              reading.compressionCount,
                                         ),
                                       ),
                                     ),
                                   ),
                                   const SizedBox(height: 8),
                                   Container(
-                                    padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 20),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 6,
+                                      horizontal: 20,
+                                    ),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFFE63946).withValues(alpha: 0.1),
+                                      color: const Color(
+                                        0xFFE63946,
+                                      ).withValues(alpha: 0.1),
                                       borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(color: const Color(0xFFE63946).withValues(alpha: 0.2)),
+                                      border: Border.all(
+                                        color: const Color(
+                                          0xFFE63946,
+                                        ).withValues(alpha: 0.2),
+                                      ),
                                     ),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
@@ -385,7 +411,9 @@ class _LiveCprScreenState extends State<LiveCprScreen>
                                         Text(
                                           'CYCLE PROGRESS: ',
                                           style: GoogleFonts.inter(
-                                            color: const Color(0xFFE63946).withValues(alpha: 0.7),
+                                            color: const Color(
+                                              0xFFE63946,
+                                            ).withValues(alpha: 0.7),
                                             fontSize: 10,
                                             fontWeight: FontWeight.w700,
                                             letterSpacing: 1.5,
@@ -404,7 +432,9 @@ class _LiveCprScreenState extends State<LiveCprScreen>
                                   ),
                                   const SizedBox(height: 8),
                                   Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 24,
+                                    ),
                                     child: BpmGauge(reading: reading),
                                   ),
                                 ],
@@ -412,7 +442,7 @@ class _LiveCprScreenState extends State<LiveCprScreen>
                             );
                           },
                         );
-                      }
+                      },
                     ),
                   ),
                 ] else ...[
@@ -421,7 +451,9 @@ class _LiveCprScreenState extends State<LiveCprScreen>
                   const Spacer(),
                 ],
                 if (_isActive) ...[
-                  if (_isAiThinking || _aiResponse != null || _recognizedText != null)
+                  if (_isAiThinking ||
+                      _aiResponse != null ||
+                      _recognizedText != null)
                     _buildSubtleVoiceInfo(),
                 ],
                 _buildBottomControls(),
@@ -592,7 +624,10 @@ class _LiveCprScreenState extends State<LiveCprScreen>
             },
             child: Container(
               padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(12)),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(12),
+              ),
               child: const Icon(Icons.close, color: Colors.white70, size: 18),
             ),
           ),
@@ -604,11 +639,28 @@ class _LiveCprScreenState extends State<LiveCprScreen>
                 color: const Color(0xFFE63946).withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: Row(children: [
-                Container(width: 8, height: 8, decoration: const BoxDecoration(color: Color(0xFFE63946), shape: BoxShape.circle)),
-                const SizedBox(width: 8),
-                Text('LIVE', style: GoogleFonts.inter(color: const Color(0xFFE63946), fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 1.5)),
-              ]),
+              child: Row(
+                children: [
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFE63946),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'LIVE',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFFE63946),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.5,
+                    ),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(width: 8),
             // Integrated Mic Indicator in header to avoid overlapping with AI response
@@ -618,9 +670,24 @@ class _LiveCprScreenState extends State<LiveCprScreen>
               _buildAiOfflinePill(),
             ],
             const Spacer(),
-            Text(_elapsedFormatted, style: GoogleFonts.outfit(color: Colors.white54, fontSize: 16, fontWeight: FontWeight.w600)),
+            Text(
+              _elapsedFormatted,
+              style: GoogleFonts.outfit(
+                color: Colors.white54,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ] else ...[
-            Text('LIVE CPR MODE', style: GoogleFonts.inter(color: Colors.white54, fontSize: 13, fontWeight: FontWeight.w600, letterSpacing: 2)),
+            Text(
+              'LIVE CPR MODE',
+              style: GoogleFonts.inter(
+                color: Colors.white54,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 2,
+              ),
+            ),
             const Spacer(),
           ],
         ],
@@ -635,29 +702,69 @@ class _LiveCprScreenState extends State<LiveCprScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF3498DB).withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF3498DB).withValues(alpha: 0.3)),
+        border: Border.all(
+          color: const Color(0xFF3498DB).withValues(alpha: 0.3),
+        ),
       ),
-      child: Row(children: [
-        const Icon(Icons.air, color: Color(0xFF3498DB), size: 28),
-        const SizedBox(width: 12),
-        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('RESCUE BREATHS', style: GoogleFonts.inter(color: const Color(0xFF3498DB), fontSize: 13, fontWeight: FontWeight.w700, letterSpacing: 1.5)),
-          const SizedBox(height: 4),
-          Text('Give 2 breaths now, then continue', style: GoogleFonts.inter(color: Colors.white70, fontSize: 14)),
-        ])),
-      ]),
+      child: Row(
+        children: [
+          const Icon(Icons.air, color: Color(0xFF3498DB), size: 28),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'RESCUE BREATHS',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF3498DB),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Give 2 breaths now, then continue',
+                  style: GoogleFonts.inter(color: Colors.white70, fontSize: 14),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildStartPrompt() {
-    return Column(children: [
-      Icon(Icons.fitness_center, color: const Color(0xFFE63946).withValues(alpha: 0.3), size: 80),
-      const SizedBox(height: 24),
-      Text('READY TO START', style: GoogleFonts.outfit(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w800)),
-      const SizedBox(height: 8),
-      Text('Place phone on a flat surface\nor hold it while doing CPR',
-        style: GoogleFonts.inter(color: Colors.white38, fontSize: 14, height: 1.5), textAlign: TextAlign.center),
-    ]);
+    return Column(
+      children: [
+        Icon(
+          Icons.fitness_center,
+          color: const Color(0xFFE63946).withValues(alpha: 0.3),
+          size: 80,
+        ),
+        const SizedBox(height: 24),
+        Text(
+          'READY TO START',
+          style: GoogleFonts.outfit(
+            color: Colors.white,
+            fontSize: 24,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Place phone on a flat surface\nor hold it while doing CPR',
+          style: GoogleFonts.inter(
+            color: Colors.white38,
+            fontSize: 14,
+            height: 1.5,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
   }
 
   Widget _buildBottomControls() {
@@ -669,17 +776,30 @@ class _LiveCprScreenState extends State<LiveCprScreen>
         child: ElevatedButton(
           onPressed: _isActive ? _stopSession : _startSession,
           style: ElevatedButton.styleFrom(
-            backgroundColor: _isActive ? Colors.white.withValues(alpha: 0.1) : const Color(0xFFE63946),
+            backgroundColor: _isActive
+                ? Colors.white.withValues(alpha: 0.1)
+                : const Color(0xFFE63946),
             foregroundColor: Colors.white,
             elevation: 0,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
           ),
-          child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            Icon(_isActive ? Icons.stop : Icons.play_arrow, size: 24),
-            const SizedBox(width: 8),
-            Text(_isActive ? 'STOP SESSION' : 'BEGIN COMPRESSIONS',
-              style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700, letterSpacing: 1.5)),
-          ]),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(_isActive ? Icons.stop : Icons.play_arrow, size: 24),
+              const SizedBox(width: 8),
+              Text(
+                _isActive ? 'STOP SESSION' : 'BEGIN COMPRESSIONS',
+                style: GoogleFonts.inter(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.5,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

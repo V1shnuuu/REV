@@ -48,7 +48,9 @@ class SttService {
 
   bool get isListening => _speechToText.isListening;
 
-  Future<void> startContinuousListening({required Function(String) onResult}) async {
+  Future<void> startContinuousListening({
+    required Function(String) onResult,
+  }) async {
     if (!_isInitialized) await initialize();
     if (!_isInitialized) return;
 

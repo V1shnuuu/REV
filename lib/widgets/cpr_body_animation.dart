@@ -45,7 +45,10 @@ class _CprBodyAnimationState extends State<CprBodyAnimation>
     // 3. Slower release (1.0 -> 0.0)
     _compressionAnim = TweenSequence<double>([
       TweenSequenceItem(
-        tween: Tween<double>(begin: 0.0, end: 1.0).chain(CurveTween(curve: Curves.easeInQuad)),
+        tween: Tween<double>(
+          begin: 0.0,
+          end: 1.0,
+        ).chain(CurveTween(curve: Curves.easeInQuad)),
         weight: 35, // 35% of the time: pressing down
       ),
       TweenSequenceItem(
@@ -53,7 +56,10 @@ class _CprBodyAnimationState extends State<CprBodyAnimation>
         weight: 10, // 10% of the time: hold at the bottom
       ),
       TweenSequenceItem(
-        tween: Tween<double>(begin: 1.0, end: 0.0).chain(CurveTween(curve: Curves.easeOutCubic)),
+        tween: Tween<double>(
+          begin: 1.0,
+          end: 0.0,
+        ).chain(CurveTween(curve: Curves.easeOutCubic)),
         weight: 55, // 55% of the time: release
       ),
     ]).animate(_controller);
@@ -61,15 +67,18 @@ class _CprBodyAnimationState extends State<CprBodyAnimation>
     // Glow: brighter when pressed
     _glowAnim = TweenSequence<double>([
       TweenSequenceItem(
-        tween: Tween<double>(begin: 0.25, end: 0.85).chain(CurveTween(curve: Curves.easeInQuad)),
+        tween: Tween<double>(
+          begin: 0.25,
+          end: 0.85,
+        ).chain(CurveTween(curve: Curves.easeInQuad)),
         weight: 35,
       ),
+      TweenSequenceItem(tween: ConstantTween<double>(0.85), weight: 10),
       TweenSequenceItem(
-        tween: ConstantTween<double>(0.85),
-        weight: 10,
-      ),
-      TweenSequenceItem(
-        tween: Tween<double>(begin: 0.85, end: 0.25).chain(CurveTween(curve: Curves.easeOutCubic)),
+        tween: Tween<double>(
+          begin: 0.85,
+          end: 0.25,
+        ).chain(CurveTween(curve: Curves.easeOutCubic)),
         weight: 55,
       ),
     ]).animate(_controller);
@@ -77,15 +86,18 @@ class _CprBodyAnimationState extends State<CprBodyAnimation>
     // Arrow bounce - arrows move down during press and return
     _arrowAnim = TweenSequence<double>([
       TweenSequenceItem(
-        tween: Tween<double>(begin: 0.0, end: 1.0).chain(CurveTween(curve: Curves.easeInQuad)),
+        tween: Tween<double>(
+          begin: 0.0,
+          end: 1.0,
+        ).chain(CurveTween(curve: Curves.easeInQuad)),
         weight: 35,
       ),
+      TweenSequenceItem(tween: ConstantTween<double>(1.0), weight: 10),
       TweenSequenceItem(
-        tween: ConstantTween<double>(1.0),
-        weight: 10,
-      ),
-      TweenSequenceItem(
-        tween: Tween<double>(begin: 1.0, end: 0.0).chain(CurveTween(curve: Curves.easeOutCubic)),
+        tween: Tween<double>(
+          begin: 1.0,
+          end: 0.0,
+        ).chain(CurveTween(curve: Curves.easeOutCubic)),
         weight: 55,
       ),
     ]).animate(_controller);
@@ -93,13 +105,13 @@ class _CprBodyAnimationState extends State<CprBodyAnimation>
     // Ripple effect that expands rapidly when pressing down
     _rippleAnim = TweenSequence<double>([
       TweenSequenceItem(
-        tween: Tween<double>(begin: 0.0, end: 1.0).chain(CurveTween(curve: Curves.easeOutQuad)),
+        tween: Tween<double>(
+          begin: 0.0,
+          end: 1.0,
+        ).chain(CurveTween(curve: Curves.easeOutQuad)),
         weight: 45, // expands across the press and hold
       ),
-      TweenSequenceItem(
-        tween: ConstantTween<double>(1.0),
-        weight: 55,
-      ),
+      TweenSequenceItem(tween: ConstantTween<double>(1.0), weight: 55),
     ]).animate(_controller);
 
     // Animation now waits for the first compression count update to trigger
@@ -192,7 +204,12 @@ class _CprBodyPainter extends CustomPainter {
   }
 
   void _drawGlow(
-      Canvas canvas, double cx, double torsoTop, Size size, double depth) {
+    Canvas canvas,
+    double cx,
+    double torsoTop,
+    Size size,
+    double depth,
+  ) {
     // Chest glow — gets brighter when pressed
     final glowCenter = Offset(cx, torsoTop + 130 + depth);
     final glowPaint = Paint()
@@ -208,8 +225,13 @@ class _CprBodyPainter extends CustomPainter {
     canvas.drawCircle(glowCenter, 80, glowPaint);
   }
 
-  void _drawTorso(Canvas canvas, double cx, double torsoTop, Size size,
-      double depth) {
+  void _drawTorso(
+    Canvas canvas,
+    double cx,
+    double torsoTop,
+    Size size,
+    double depth,
+  ) {
     final bodyPaint = Paint()
       ..color = Colors.white.withValues(alpha: 0.12)
       ..style = PaintingStyle.stroke
@@ -234,21 +256,39 @@ class _CprBodyPainter extends CustomPainter {
     // --- Shoulders ---
     final shoulderY = torsoTop + 20;
     canvas.drawLine(
-        Offset(cx - 7, shoulderY), Offset(cx - 70, shoulderY + 12), bodyPaint);
+      Offset(cx - 7, shoulderY),
+      Offset(cx - 70, shoulderY + 12),
+      bodyPaint,
+    );
     canvas.drawLine(
-        Offset(cx + 7, shoulderY), Offset(cx + 70, shoulderY + 12), bodyPaint);
+      Offset(cx + 7, shoulderY),
+      Offset(cx + 70, shoulderY + 12),
+      bodyPaint,
+    );
 
     // --- Arms (slightly bent) ---
     // Left arm
-    canvas.drawLine(Offset(cx - 70, shoulderY + 12),
-        Offset(cx - 80, shoulderY + 90), bodyPaint);
-    canvas.drawLine(Offset(cx - 80, shoulderY + 90),
-        Offset(cx - 70, shoulderY + 150), bodyPaint);
+    canvas.drawLine(
+      Offset(cx - 70, shoulderY + 12),
+      Offset(cx - 80, shoulderY + 90),
+      bodyPaint,
+    );
+    canvas.drawLine(
+      Offset(cx - 80, shoulderY + 90),
+      Offset(cx - 70, shoulderY + 150),
+      bodyPaint,
+    );
     // Right arm
-    canvas.drawLine(Offset(cx + 70, shoulderY + 12),
-        Offset(cx + 80, shoulderY + 90), bodyPaint);
-    canvas.drawLine(Offset(cx + 80, shoulderY + 90),
-        Offset(cx + 70, shoulderY + 150), bodyPaint);
+    canvas.drawLine(
+      Offset(cx + 70, shoulderY + 12),
+      Offset(cx + 80, shoulderY + 90),
+      bodyPaint,
+    );
+    canvas.drawLine(
+      Offset(cx + 80, shoulderY + 90),
+      Offset(cx + 70, shoulderY + 150),
+      bodyPaint,
+    );
 
     // --- Torso outline with chest compression ---
     final torsoPath = Path();
@@ -258,16 +298,22 @@ class _CprBodyPainter extends CustomPainter {
 
     // Chest area — curves inward when compressed
     torsoPath.cubicTo(
-      cx - 68, shoulderY + 50,
-      cx - 55 + depth * 0.5, shoulderY + 90 + depth, // compression point
-      cx - 55, shoulderY + 130,
+      cx - 68,
+      shoulderY + 50,
+      cx - 55 + depth * 0.5,
+      shoulderY + 90 + depth, // compression point
+      cx - 55,
+      shoulderY + 130,
     );
 
     // Waist
     torsoPath.cubicTo(
-      cx - 50, shoulderY + 170,
-      cx - 45, shoulderY + 200,
-      cx - 50, shoulderY + 240,
+      cx - 50,
+      shoulderY + 170,
+      cx - 45,
+      shoulderY + 200,
+      cx - 50,
+      shoulderY + 240,
     );
 
     // Hip
@@ -280,15 +326,21 @@ class _CprBodyPainter extends CustomPainter {
     torsoPathR.moveTo(cx + 70, shoulderY + 12);
 
     torsoPathR.cubicTo(
-      cx + 68, shoulderY + 50,
-      cx + 55 - depth * 0.5, shoulderY + 90 + depth,
-      cx + 55, shoulderY + 130,
+      cx + 68,
+      shoulderY + 50,
+      cx + 55 - depth * 0.5,
+      shoulderY + 90 + depth,
+      cx + 55,
+      shoulderY + 130,
     );
 
     torsoPathR.cubicTo(
-      cx + 50, shoulderY + 170,
-      cx + 45, shoulderY + 200,
-      cx + 50, shoulderY + 240,
+      cx + 50,
+      shoulderY + 170,
+      cx + 45,
+      shoulderY + 200,
+      cx + 50,
+      shoulderY + 240,
     );
 
     torsoPathR.lineTo(cx + 40, shoulderY + 260);
@@ -306,8 +358,7 @@ class _CprBodyPainter extends CustomPainter {
       final ribW = 38.0 - i * 2;
 
       canvas.drawArc(
-        Rect.fromCenter(
-            center: Offset(cx, ribY), width: ribW * 2, height: 14),
+        Rect.fromCenter(center: Offset(cx, ribY), width: ribW * 2, height: 14),
         0.2,
         2.7,
         false,
@@ -329,7 +380,11 @@ class _CprBodyPainter extends CustomPainter {
   }
 
   void _drawChestHighlight(
-      Canvas canvas, double cx, double torsoTop, double depth) {
+    Canvas canvas,
+    double cx,
+    double torsoTop,
+    double depth,
+  ) {
     final highlightCenter = Offset(cx, torsoTop + 130 + depth);
 
     // Ripple ring
@@ -467,11 +522,7 @@ class _CprBodyPainter extends CustomPainter {
       final arrowSize = 6.0 - i * 0.5;
 
       // Arrow stem
-      canvas.drawLine(
-        Offset(ax, ay),
-        Offset(ax, ay + 14),
-        arrowPaint,
-      );
+      canvas.drawLine(Offset(ax, ay), Offset(ax, ay + 14), arrowPaint);
       // Arrow head
       canvas.drawLine(
         Offset(ax - arrowSize, ay + 14 - arrowSize),
@@ -491,11 +542,7 @@ class _CprBodyPainter extends CustomPainter {
       final ay = torsoTop + 80 + i * 18 + arrowShift;
       final arrowSize = 6.0 - i * 0.5;
 
-      canvas.drawLine(
-        Offset(ax, ay),
-        Offset(ax, ay + 14),
-        arrowPaint,
-      );
+      canvas.drawLine(Offset(ax, ay), Offset(ax, ay + 14), arrowPaint);
       canvas.drawLine(
         Offset(ax - arrowSize, ay + 14 - arrowSize),
         Offset(ax, ay + 14),
@@ -516,11 +563,7 @@ class _CprBodyPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round;
 
     final bay = torsoTop + 40 + arrowShift;
-    canvas.drawLine(
-      Offset(cx, bay),
-      Offset(cx, bay + 20),
-      bigArrowPaint,
-    );
+    canvas.drawLine(Offset(cx, bay), Offset(cx, bay + 20), bigArrowPaint);
     canvas.drawLine(
       Offset(cx - 8, bay + 12),
       Offset(cx, bay + 20),

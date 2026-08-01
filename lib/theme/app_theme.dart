@@ -102,7 +102,10 @@ class AppTheme {
         style: TextButton.styleFrom(
           foregroundColor: c.urgentAction,
           textStyle: AppTypography.labelLarge,
-          minimumSize: const Size(AppTouchTarget.minimum, AppTouchTarget.minimum),
+          minimumSize: const Size(
+            AppTouchTarget.minimum,
+            AppTouchTarget.minimum,
+          ),
         ),
       ),
     );

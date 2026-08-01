@@ -102,10 +102,7 @@ class CompressionAnimation extends StatelessWidget {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         gradient: RadialGradient(
-                          colors: [
-                            color,
-                            color.withValues(alpha: 0.7),
-                          ],
+                          colors: [color, color.withValues(alpha: 0.7)],
                           center: const Alignment(-0.2, -0.2),
                         ),
                         boxShadow: [

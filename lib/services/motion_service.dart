@@ -45,11 +45,12 @@ class MotionService {
 
     _bpmController.add(BpmReading.initial);
 
-    _subscription = accelerometerEventStream(
-      samplingPeriod: const Duration(milliseconds: 20),
-    ).listen((event) {
-      _processAccelerometerEvent(event);
-    });
+    _subscription =
+        accelerometerEventStream(
+          samplingPeriod: const Duration(milliseconds: 20),
+        ).listen((event) {
+          _processAccelerometerEvent(event);
+        });
   }
 
   void _processAccelerometerEvent(AccelerometerEvent event) {
@@ -71,20 +72,23 @@ class MotionService {
       if (_timestamps.length >= 3) {
         final int diff = _timestamps.last - _timestamps.first;
         if (diff > 0) {
-          final double bpm =
-              ((_timestamps.length - 1) / (diff / 60000.0));
-          _bpmController.add(BpmReading(
-            bpm: bpm,
-            status: _evaluateBpm(bpm),
-            compressionCount: _compressionCount,
-          ));
+          final double bpm = ((_timestamps.length - 1) / (diff / 60000.0));
+          _bpmController.add(
+            BpmReading(
+              bpm: bpm,
+              status: _evaluateBpm(bpm),
+              compressionCount: _compressionCount,
+            ),
+          );
         }
       } else {
-        _bpmController.add(BpmReading(
-          bpm: 0,
-          status: BpmStatus.waiting,
-          compressionCount: _compressionCount,
-        ));
+        _bpmController.add(
+          BpmReading(
+            bpm: 0,
+            status: BpmStatus.waiting,
+            compressionCount: _compressionCount,
+          ),
+        );
       }
     }
   }
@@ -110,20 +114,23 @@ class MotionService {
       if (_timestamps.length >= 3) {
         final int diff = _timestamps.last - _timestamps.first;
         if (diff > 0) {
-          final double bpm =
-              ((_timestamps.length - 1) / (diff / 60000.0));
-          _bpmController.add(BpmReading(
-            bpm: bpm,
-            status: _evaluateBpm(bpm),
-            compressionCount: _compressionCount,
-          ));
+          final double bpm = ((_timestamps.length - 1) / (diff / 60000.0));
+          _bpmController.add(
+            BpmReading(
+              bpm: bpm,
+              status: _evaluateBpm(bpm),
+              compressionCount: _compressionCount,
+            ),
+          );
         }
       } else {
-        _bpmController.add(BpmReading(
-          bpm: 0,
-          status: BpmStatus.waiting,
-          compressionCount: _compressionCount,
-        ));
+        _bpmController.add(
+          BpmReading(
+            bpm: 0,
+            status: BpmStatus.waiting,
+            compressionCount: _compressionCount,
+          ),
+        );
       }
     }
   }

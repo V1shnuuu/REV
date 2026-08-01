@@ -11,13 +11,11 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen>
-    with TickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late AnimationController _pulseController;
   late AnimationController _breatheController;
   late AnimationController _fadeInController;
   final OllamaService _ollama = OllamaService();
-  bool _ollamaAvailable = false;
   bool _disclaimerShown = false;
 
   @override
@@ -41,11 +39,16 @@ class _HomeScreenState extends State<HomeScreen>
     _checkOllama();
   }
 
+  /// Warms the shared OllamaService availability flag so downstream screens
+  /// (triage, live CPR) can branch immediately instead of blocking on a
+  /// first-use network check. The result is deliberately not stored locally:
+  /// the home screen currently shows no AI status indicator.
+  ///
+  /// TODO(phase-3): surface AI reachability on the home screen using the
+  /// Phase 2 status component, so the rescuer knows before they start whether
+  /// adaptive guidance will be available.
   Future<void> _checkOllama() async {
-    final available = await _ollama.checkAvailability();
-    if (mounted) {
-      setState(() => _ollamaAvailable = available);
-    }
+    await _ollama.checkAvailability();
   }
 
   @override
@@ -111,8 +114,10 @@ class _HomeScreenState extends State<HomeScreen>
                   ),
                   const SizedBox(height: 8),
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFE63946).withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(20),
@@ -161,14 +166,16 @@ class _HomeScreenState extends State<HomeScreen>
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFFE63946)
-                                      .withValues(alpha: glowOpacity),
+                                  color: const Color(
+                                    0xFFE63946,
+                                  ).withValues(alpha: glowOpacity),
                                   blurRadius: 50,
                                   spreadRadius: 15,
                                 ),
                                 BoxShadow(
-                                  color: const Color(0xFFE63946)
-                                      .withValues(alpha: glowOpacity * 0.5),
+                                  color: const Color(
+                                    0xFFE63946,
+                                  ).withValues(alpha: glowOpacity * 0.5),
                                   blurRadius: 100,
                                   spreadRadius: 30,
                                 ),
@@ -217,9 +224,16 @@ class _HomeScreenState extends State<HomeScreen>
                       Navigator.pushNamed(context, '/guide');
                     },
                     style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                      side: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 32,
+                        vertical: 16,
+                      ),
+                      side: BorderSide(
+                        color: Colors.white.withValues(alpha: 0.3),
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -247,15 +261,28 @@ class _HomeScreenState extends State<HomeScreen>
                       Navigator.pushNamed(context, '/chat');
                     },
                     style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                      side: BorderSide(color: const Color(0xFFE63946).withValues(alpha: 0.5)),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                      backgroundColor: const Color(0xFFE63946).withValues(alpha: 0.08),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 32,
+                        vertical: 16,
+                      ),
+                      side: BorderSide(
+                        color: const Color(0xFFE63946).withValues(alpha: 0.5),
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      backgroundColor: const Color(
+                        0xFFE63946,
+                      ).withValues(alpha: 0.08),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.smart_toy, color: const Color(0xFFFF6B6B), size: 20),
+                        Icon(
+                          Icons.smart_toy,
+                          color: const Color(0xFFFF6B6B),
+                          size: 20,
+                        ),
                         const SizedBox(width: 8),
                         Text(
                           'ASK GEMMA',

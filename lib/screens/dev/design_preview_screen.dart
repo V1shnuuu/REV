@@ -22,8 +22,9 @@ class _DesignPreviewScreenState extends State<DesignPreviewScreen> {
 
   void _toggle() {
     setState(() {
-      _brightness =
-          _brightness == Brightness.dark ? Brightness.light : Brightness.dark;
+      _brightness = _brightness == Brightness.dark
+          ? Brightness.light
+          : Brightness.dark;
     });
   }
 
@@ -45,8 +46,10 @@ class _DesignPreviewScreenState extends State<DesignPreviewScreen> {
                   padding: const EdgeInsets.only(right: AppSpacing.sm),
                   child: TextButton.icon(
                     onPressed: _toggle,
-                    icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode,
-                        size: 18),
+                    icon: Icon(
+                      isDark ? Icons.light_mode : Icons.dark_mode,
+                      size: 18,
+                    ),
                     label: Text(isDark ? 'LIGHT' : 'DARK'),
                   ),
                 ),
@@ -54,7 +57,11 @@ class _DesignPreviewScreenState extends State<DesignPreviewScreen> {
             ),
             body: ListView(
               padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.xxl, AppSpacing.lg, AppSpacing.xxl, AppSpacing.giant),
+                AppSpacing.xxl,
+                AppSpacing.lg,
+                AppSpacing.xxl,
+                AppSpacing.giant,
+              ),
               children: [
                 _SectionHeader('Surfaces'),
                 _SwatchRow('surfacePrimary', c.surfacePrimary, c),
@@ -87,11 +94,26 @@ class _DesignPreviewScreenState extends State<DesignPreviewScreen> {
                 _SwatchRow('textTertiary', c.textTertiary, c),
 
                 _SectionHeader('Type scale'),
-                _TypeSample('displayLarge  72/800', context.text.displayLarge, '128'),
-                _TypeSample('displayMedium 56/800', context.text.displayMedium, '30'),
-                _TypeSample('displaySmall  40/700', context.text.displaySmall, '02:14'),
+                _TypeSample(
+                  'displayLarge  72/800',
+                  context.text.displayLarge,
+                  '128',
+                ),
+                _TypeSample(
+                  'displayMedium 56/800',
+                  context.text.displayMedium,
+                  '30',
+                ),
+                _TypeSample(
+                  'displaySmall  40/700',
+                  context.text.displaySmall,
+                  '02:14',
+                ),
                 _TypeSample('headlineLarge 28/700', context.text.headlineLarge),
-                _TypeSample('headlineMedium 24/700', context.text.headlineMedium),
+                _TypeSample(
+                  'headlineMedium 24/700',
+                  context.text.headlineMedium,
+                ),
                 _TypeSample('headlineSmall 20/600', context.text.headlineSmall),
                 _TypeSample('titleLarge 18/600', context.text.titleLarge),
                 _TypeSample('titleMedium 16/600', context.text.titleMedium),
@@ -99,9 +121,21 @@ class _DesignPreviewScreenState extends State<DesignPreviewScreen> {
                 _TypeSample('bodyLarge 16/400', context.text.bodyLarge),
                 _TypeSample('bodyMedium 14/400', context.text.bodyMedium),
                 _TypeSample('bodySmall 12/400', context.text.bodySmall),
-                _TypeSample('labelLarge 14/700', context.text.labelLarge, 'PUSH FASTER'),
-                _TypeSample('labelMedium 12/700', context.text.labelMedium, 'CYCLE PROGRESS'),
-                _TypeSample('labelSmall 10/700', context.text.labelSmall, 'AI OFFLINE'),
+                _TypeSample(
+                  'labelLarge 14/700',
+                  context.text.labelLarge,
+                  'PUSH FASTER',
+                ),
+                _TypeSample(
+                  'labelMedium 12/700',
+                  context.text.labelMedium,
+                  'CYCLE PROGRESS',
+                ),
+                _TypeSample(
+                  'labelSmall 10/700',
+                  context.text.labelSmall,
+                  'AI OFFLINE',
+                ),
 
                 _SectionHeader('Spacing (4pt base)'),
                 _SpacingBar('xs', AppSpacing.xs, c),
@@ -142,16 +176,26 @@ class _DesignPreviewScreenState extends State<DesignPreviewScreen> {
                 Row(
                   children: [
                     _ElevationBox(
-                        'glow/urgent', AppElevation.glow(c.urgentAction), c),
+                      'glow/urgent',
+                      AppElevation.glow(c.urgentAction),
+                      c,
+                    ),
                     AppSpacing.hGapLg,
                     _ElevationBox(
-                        'glow/inRange', AppElevation.glow(c.inRangeSuccess), c),
+                      'glow/inRange',
+                      AppElevation.glow(c.inRangeSuccess),
+                      c,
+                    ),
                   ],
                 ),
 
                 _SectionHeader('Touch targets'),
                 _TouchTargetBar('minimum 48', AppTouchTarget.minimum, c),
-                _TouchTargetBar('comfortable 56', AppTouchTarget.comfortable, c),
+                _TouchTargetBar(
+                  'comfortable 56',
+                  AppTouchTarget.comfortable,
+                  c,
+                ),
                 _TouchTargetBar('critical 64', AppTouchTarget.critical, c),
 
                 _SectionHeader('Motion'),
@@ -160,7 +204,9 @@ class _DesignPreviewScreenState extends State<DesignPreviewScreen> {
                   'deliberate 500ms  ·  compressionCycle 545ms (110 BPM)\n\n'
                   'Reduce motion is currently: '
                   '${ResolvedMotion.of(context).reduceMotion ? "ON" : "OFF"}',
-                  style: context.text.bodyMedium?.copyWith(color: c.textSecondary),
+                  style: context.text.bodyMedium?.copyWith(
+                    color: c.textSecondary,
+                  ),
                 ),
               ],
             ),
@@ -178,10 +224,15 @@ class _SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: AppSpacing.xxxl, bottom: AppSpacing.md),
+      padding: const EdgeInsets.only(
+        top: AppSpacing.xxxl,
+        bottom: AppSpacing.md,
+      ),
       child: Text(
         label.toUpperCase(),
-        style: context.text.labelMedium?.copyWith(color: context.colors.urgentAction),
+        style: context.text.labelMedium?.copyWith(
+          color: context.colors.urgentAction,
+        ),
       ),
     );
   }
@@ -210,8 +261,10 @@ class _SwatchRow extends StatelessWidget {
           ),
           AppSpacing.hGapMd,
           Expanded(
-            child: Text(name,
-                style: context.text.bodyMedium?.copyWith(color: c.textSecondary)),
+            child: Text(
+              name,
+              style: context.text.bodyMedium?.copyWith(color: c.textSecondary),
+            ),
           ),
         ],
       ),
@@ -232,9 +285,12 @@ class _TypeSample extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label,
-              style: context.text.bodySmall
-                  ?.copyWith(color: context.colors.textTertiary)),
+          Text(
+            label,
+            style: context.text.bodySmall?.copyWith(
+              color: context.colors.textTertiary,
+            ),
+          ),
           AppSpacing.gapXs,
           Text(sample ?? 'Push hard and fast', style: style),
         ],
@@ -257,8 +313,10 @@ class _SpacingBar extends StatelessWidget {
         children: [
           SizedBox(
             width: 84,
-            child: Text('$name  ${value.toInt()}',
-                style: context.text.bodySmall?.copyWith(color: c.textSecondary)),
+            child: Text(
+              '$name  ${value.toInt()}',
+              style: context.text.bodySmall?.copyWith(color: c.textSecondary),
+            ),
           ),
           Container(
             width: value,
@@ -291,9 +349,11 @@ class _RadiusChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(radius),
         border: Border.all(color: c.borderStrong),
       ),
-      child: Text('$name\n${radius.toInt()}',
-          textAlign: TextAlign.center,
-          style: context.text.bodySmall?.copyWith(color: c.textSecondary)),
+      child: Text(
+        '$name\n${radius.toInt()}',
+        textAlign: TextAlign.center,
+        style: context.text.bodySmall?.copyWith(color: c.textSecondary),
+      ),
     );
   }
 }
@@ -315,9 +375,11 @@ class _ElevationBox extends StatelessWidget {
           borderRadius: AppRadius.borderMd,
           boxShadow: shadow,
         ),
-        child: Text(name,
-            textAlign: TextAlign.center,
-            style: context.text.bodySmall?.copyWith(color: c.textSecondary)),
+        child: Text(
+          name,
+          textAlign: TextAlign.center,
+          style: context.text.bodySmall?.copyWith(color: c.textSecondary),
+        ),
       ),
     );
   }
@@ -345,8 +407,10 @@ class _TouchTargetBar extends StatelessWidget {
             ),
           ),
           AppSpacing.hGapMd,
-          Text(name,
-              style: context.text.bodyMedium?.copyWith(color: c.textSecondary)),
+          Text(
+            name,
+            style: context.text.bodyMedium?.copyWith(color: c.textSecondary),
+          ),
         ],
       ),
     );

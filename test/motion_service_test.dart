@@ -39,15 +39,18 @@ void main() {
       expect(service.compressionCount, 1);
     });
 
-    test('counts compressions spaced further apart than the debounce window', () async {
-      service.simulateCompression();
-      await Future.delayed(const Duration(milliseconds: 350));
-      service.simulateCompression();
-      await Future.delayed(const Duration(milliseconds: 350));
-      service.simulateCompression();
+    test(
+      'counts compressions spaced further apart than the debounce window',
+      () async {
+        service.simulateCompression();
+        await Future.delayed(const Duration(milliseconds: 350));
+        service.simulateCompression();
+        await Future.delayed(const Duration(milliseconds: 350));
+        service.simulateCompression();
 
-      expect(service.compressionCount, 3);
-    });
+        expect(service.compressionCount, 3);
+      },
+    );
 
     test('reset() zeroes the count and re-emits the initial reading', () async {
       service.simulateCompression();
@@ -95,35 +98,47 @@ void main() {
       return readings.last;
     }
 
-    test('~110 BPM (545ms interval, the clinical target) is classified good', () async {
-      final reading = await lastReadingForInterval(const Duration(milliseconds: 545));
-      expect(reading.status, BpmStatus.good);
-      expect(reading.bpm, inInclusiveRange(100, 120));
-    });
+    test(
+      '~110 BPM (545ms interval, the clinical target) is classified good',
+      () async {
+        final reading = await lastReadingForInterval(
+          const Duration(milliseconds: 545),
+        );
+        expect(reading.status, BpmStatus.good);
+        expect(reading.bpm, inInclusiveRange(100, 120));
+      },
+    );
 
     test('~150 BPM (400ms interval) is classified too fast', () async {
-      final reading = await lastReadingForInterval(const Duration(milliseconds: 400));
+      final reading = await lastReadingForInterval(
+        const Duration(milliseconds: 400),
+      );
       expect(reading.status, BpmStatus.tooFast);
       expect(reading.bpm, greaterThan(120));
     });
 
     test('~80 BPM (750ms interval) is classified too slow', () async {
-      final reading = await lastReadingForInterval(const Duration(milliseconds: 750));
+      final reading = await lastReadingForInterval(
+        const Duration(milliseconds: 750),
+      );
       expect(reading.status, BpmStatus.tooSlow);
       expect(reading.bpm, lessThan(100));
     });
 
-    test('fewer than 3 compressions reports waiting, not a BPM value', () async {
-      final readings = <BpmReading>[];
-      final sub = service.bpmStream.listen(readings.add);
+    test(
+      'fewer than 3 compressions reports waiting, not a BPM value',
+      () async {
+        final readings = <BpmReading>[];
+        final sub = service.bpmStream.listen(readings.add);
 
-      service.simulateCompression();
-      await Future.delayed(const Duration(milliseconds: 350));
-      service.simulateCompression();
-      await Future.delayed(const Duration(milliseconds: 20));
+        service.simulateCompression();
+        await Future.delayed(const Duration(milliseconds: 350));
+        service.simulateCompression();
+        await Future.delayed(const Duration(milliseconds: 20));
 
-      expect(readings.every((r) => r.status == BpmStatus.waiting), isTrue);
-      await sub.cancel();
-    });
+        expect(readings.every((r) => r.status == BpmStatus.waiting), isTrue);
+        await sub.cancel();
+      },
+    );
   });
 }

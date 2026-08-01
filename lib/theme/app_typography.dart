@@ -1,4 +1,3 @@
-import 'dart:ui' show FontFeature, FontVariation;
 import 'package:flutter/material.dart';
 
 /// Type scale, built on locally bundled variable fonts (Outfit for display /
@@ -20,7 +19,9 @@ class AppTypography {
   /// elapsed timer) from jittering in width as digits change.
   static const List<FontFeature> _tabular = [FontFeature.tabularFigures()];
 
-  static List<FontVariation> _wght(double weight) => [FontVariation('wght', weight)];
+  static List<FontVariation> _wght(double weight) => [
+    FontVariation('wght', weight),
+  ];
 
   static TextStyle _display({
     required double size,
@@ -59,30 +60,59 @@ class AppTypography {
 
   /// Hero metric on the live CPR screen (BPM). Must remain the largest
   /// element on that screen.
-  static final TextStyle displayLarge =
-      _display(size: 72, height: 1.0, weight: 800, letterSpacing: -2);
+  static final TextStyle displayLarge = _display(
+    size: 72,
+    height: 1.0,
+    weight: 800,
+    letterSpacing: -2,
+  );
 
   /// Secondary hero metric (compression count).
-  static final TextStyle displayMedium =
-      _display(size: 56, height: 1.05, weight: 800, letterSpacing: -1.5);
+  static final TextStyle displayMedium = _display(
+    size: 56,
+    height: 1.05,
+    weight: 800,
+    letterSpacing: -1.5,
+  );
 
   /// Tertiary metric (elapsed timer, cycle progress).
-  static final TextStyle displaySmall =
-      _display(size: 40, height: 1.1, weight: 700, letterSpacing: -1);
+  static final TextStyle displaySmall = _display(
+    size: 40,
+    height: 1.1,
+    weight: 700,
+    letterSpacing: -1,
+  );
 
   // --- Headline: screen and section titles ---
 
-  static final TextStyle headlineLarge =
-      _display(size: 28, height: 1.2, weight: 700);
-  static final TextStyle headlineMedium =
-      _display(size: 24, height: 1.25, weight: 700);
-  static final TextStyle headlineSmall =
-      _display(size: 20, height: 1.3, weight: 600);
+  static final TextStyle headlineLarge = _display(
+    size: 28,
+    height: 1.2,
+    weight: 700,
+  );
+  static final TextStyle headlineMedium = _display(
+    size: 24,
+    height: 1.25,
+    weight: 700,
+  );
+  static final TextStyle headlineSmall = _display(
+    size: 20,
+    height: 1.3,
+    weight: 600,
+  );
 
   // --- Title: emphasised body, card headers ---
 
-  static final TextStyle titleLarge = _body(size: 18, height: 1.35, weight: 600);
-  static final TextStyle titleMedium = _body(size: 16, height: 1.4, weight: 600);
+  static final TextStyle titleLarge = _body(
+    size: 18,
+    height: 1.35,
+    weight: 600,
+  );
+  static final TextStyle titleMedium = _body(
+    size: 16,
+    height: 1.4,
+    weight: 600,
+  );
   static final TextStyle titleSmall = _body(size: 14, height: 1.4, weight: 600);
 
   // --- Body: instructions and prose ---
@@ -95,12 +125,24 @@ class AppTypography {
 
   // --- Label: all-caps metadata, status pills, button text ---
 
-  static final TextStyle labelLarge =
-      _body(size: 14, height: 1.2, weight: 700, letterSpacing: 1.5);
-  static final TextStyle labelMedium =
-      _body(size: 12, height: 1.2, weight: 700, letterSpacing: 1.5);
-  static final TextStyle labelSmall =
-      _body(size: 10, height: 1.2, weight: 700, letterSpacing: 1.2);
+  static final TextStyle labelLarge = _body(
+    size: 14,
+    height: 1.2,
+    weight: 700,
+    letterSpacing: 1.5,
+  );
+  static final TextStyle labelMedium = _body(
+    size: 12,
+    height: 1.2,
+    weight: 700,
+    letterSpacing: 1.5,
+  );
+  static final TextStyle labelSmall = _body(
+    size: 10,
+    height: 1.2,
+    weight: 700,
+    letterSpacing: 1.2,
+  );
 
   static final TextTheme textTheme = TextTheme(
     displayLarge: displayLarge,

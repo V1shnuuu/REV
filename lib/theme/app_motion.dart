@@ -72,8 +72,7 @@ class ResolvedMotion {
   bool get shouldAnimate => !reduceMotion;
 
   /// Collapses any duration to a single frame when reduce-motion is on.
-  Duration duration(Duration value) =>
-      reduceMotion ? Duration.zero : value;
+  Duration duration(Duration value) => reduceMotion ? Duration.zero : value;
 
   /// Linear curve under reduce-motion — no overshoot or bounce, which is the
   /// part that actually causes discomfort.

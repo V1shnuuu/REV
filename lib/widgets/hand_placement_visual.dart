@@ -50,9 +50,7 @@ class _HandPlacementVisualState extends State<HandPlacementVisual>
               // Body outline
               CustomPaint(
                 size: const Size(280, 340),
-                painter: _ChestDiagramPainter(
-                  glowIntensity: glowIntensity,
-                ),
+                painter: _ChestDiagramPainter(glowIntensity: glowIntensity),
               ),
               // Hand placement indicator with glow
               Positioned(
@@ -68,8 +66,9 @@ class _HandPlacementVisualState extends State<HandPlacementVisual>
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color:
-                            const Color(0xFFE63946).withValues(alpha: glowIntensity),
+                        color: const Color(
+                          0xFFE63946,
+                        ).withValues(alpha: glowIntensity),
                         blurRadius: 20,
                         spreadRadius: 5,
                       ),
@@ -91,7 +90,9 @@ class _HandPlacementVisualState extends State<HandPlacementVisual>
                   children: [
                     Icon(
                       Icons.keyboard_double_arrow_down,
-                      color: Color(0xFFE63946).withValues(alpha: glowIntensity + 0.2),
+                      color: Color(
+                        0xFFE63946,
+                      ).withValues(alpha: glowIntensity + 0.2),
                       size: 30,
                     ),
                   ],
@@ -101,8 +102,10 @@ class _HandPlacementVisualState extends State<HandPlacementVisual>
               Positioned(
                 bottom: 20,
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFE63946).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(20),

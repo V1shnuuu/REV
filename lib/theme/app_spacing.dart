@@ -22,7 +22,9 @@ class AppSpacing {
   static const double pageGutter = xxl;
 
   // Common EdgeInsets, pre-built to avoid re-allocating in build().
-  static const EdgeInsets pagePadding = EdgeInsets.symmetric(horizontal: pageGutter);
+  static const EdgeInsets pagePadding = EdgeInsets.symmetric(
+    horizontal: pageGutter,
+  );
   static const EdgeInsets cardPadding = EdgeInsets.all(lg);
   static const EdgeInsets cardPaddingCompact = EdgeInsets.all(md);
   static const EdgeInsets dialogPadding = EdgeInsets.all(xxl);

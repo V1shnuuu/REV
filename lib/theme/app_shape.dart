@@ -20,7 +20,9 @@ class AppRadius {
   static const BorderRadius borderLg = BorderRadius.all(Radius.circular(lg));
   static const BorderRadius borderXl = BorderRadius.all(Radius.circular(xl));
   static const BorderRadius borderXxl = BorderRadius.all(Radius.circular(xxl));
-  static const BorderRadius borderPill = BorderRadius.all(Radius.circular(pill));
+  static const BorderRadius borderPill = BorderRadius.all(
+    Radius.circular(pill),
+  );
 }
 
 /// Elevation as shadow recipes rather than Material's numeric elevation, so
@@ -82,10 +84,10 @@ class AppElevation {
   /// Colored ambient glow used to reinforce state on the live CPR screen.
   /// Always paired with icon + label — never the sole state signal.
   static List<BoxShadow> glow(Color color, {double intensity = 1.0}) => [
-        BoxShadow(
-          color: color.withValues(alpha: 0.28 * intensity),
-          blurRadius: 28 * intensity,
-          spreadRadius: 2 * intensity,
-        ),
-      ];
+    BoxShadow(
+      color: color.withValues(alpha: 0.28 * intensity),
+      blurRadius: 28 * intensity,
+      spreadRadius: 2 * intensity,
+    ),
+  ];
 }

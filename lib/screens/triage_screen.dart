@@ -37,7 +37,8 @@ class _TriageScreenState extends State<TriageScreen> {
     Future.delayed(const Duration(milliseconds: 300), () {
       if (mounted) {
         _tts.speak(
-            "Quick check — what's happening? Or say start, to begin CPR right away.");
+          "Quick check — what's happening? Or say start, to begin CPR right away.",
+        );
       }
     });
   }
@@ -66,44 +67,48 @@ class _TriageScreenState extends State<TriageScreen> {
       _activeProtocol = null;
     });
 
-    await _stt.startListening(onResult: (text) async {
-      if (!mounted) return;
-      setState(() {
-        _isListening = false;
-        _recognizedText = text;
-      });
+    await _stt.startListening(
+      onResult: (text) async {
+        if (!mounted) return;
+        setState(() {
+          _isListening = false;
+          _recognizedText = text;
+        });
 
-      final lower = text.toLowerCase();
-      if (lower.contains('start') || lower.contains('cpr') || lower.contains('skip')) {
-        _goToCpr();
-        return;
-      }
-
-      if (!_ollama.isAvailable) {
-        // No AI available to triage — the safe default is standard CPR,
-        // never a dead end.
-        _goToCpr();
-        return;
-      }
-
-      setState(() => _isThinking = true);
-      final result = await _ollama.classifyEmergency(text);
-      if (!mounted) return;
-      setState(() => _isThinking = false);
-
-      switch (result) {
-        case EmergencyType.choking:
-          _showProtocol(chokingProtocol);
-          break;
-        case EmergencyType.drowning:
-          _showProtocol(drowningProtocol);
-          break;
-        case EmergencyType.cardiacArrest:
-        case EmergencyType.unknown:
+        final lower = text.toLowerCase();
+        if (lower.contains('start') ||
+            lower.contains('cpr') ||
+            lower.contains('skip')) {
           _goToCpr();
-          break;
-      }
-    });
+          return;
+        }
+
+        if (!_ollama.isAvailable) {
+          // No AI available to triage — the safe default is standard CPR,
+          // never a dead end.
+          _goToCpr();
+          return;
+        }
+
+        setState(() => _isThinking = true);
+        final result = await _ollama.classifyEmergency(text);
+        if (!mounted) return;
+        setState(() => _isThinking = false);
+
+        switch (result) {
+          case EmergencyType.choking:
+            _showProtocol(chokingProtocol);
+            break;
+          case EmergencyType.drowning:
+            _showProtocol(drowningProtocol);
+            break;
+          case EmergencyType.cardiacArrest:
+          case EmergencyType.unknown:
+            _goToCpr();
+            break;
+        }
+      },
+    );
   }
 
   void _showProtocol(EmergencyProtocol protocol) {
@@ -121,8 +126,13 @@ class _TriageScreenState extends State<TriageScreen> {
             _buildHeader(),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                child: _activeProtocol == null ? _buildAskState() : _buildProtocolState(_activeProtocol!),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 16,
+                ),
+                child: _activeProtocol == null
+                    ? _buildAskState()
+                    : _buildProtocolState(_activeProtocol!),
               ),
             ),
             _buildSkipButton(),
@@ -142,12 +152,23 @@ class _TriageScreenState extends State<TriageScreen> {
             onTap: () => Navigator.pop(context),
             child: Container(
               padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(12)),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(12),
+              ),
               child: const Icon(Icons.close, color: Colors.white70, size: 18),
             ),
           ),
           const Spacer(),
-          Text('QUICK CHECK', style: GoogleFonts.inter(color: Colors.white54, fontSize: 13, fontWeight: FontWeight.w600, letterSpacing: 2)),
+          Text(
+            'QUICK CHECK',
+            style: GoogleFonts.inter(
+              color: Colors.white54,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 2,
+            ),
+          ),
           const Spacer(),
           const SizedBox(width: 38),
         ],
@@ -159,18 +180,30 @@ class _TriageScreenState extends State<TriageScreen> {
     return Column(
       children: [
         const SizedBox(height: 24),
-        Icon(Icons.record_voice_over, color: const Color(0xFFE63946).withValues(alpha: 0.4), size: 64),
+        Icon(
+          Icons.record_voice_over,
+          color: const Color(0xFFE63946).withValues(alpha: 0.4),
+          size: 64,
+        ),
         const SizedBox(height: 20),
         Text(
           "What's happening?",
           textAlign: TextAlign.center,
-          style: GoogleFonts.outfit(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w800),
+          style: GoogleFonts.outfit(
+            color: Colors.white,
+            fontSize: 22,
+            fontWeight: FontWeight.w800,
+          ),
         ),
         const SizedBox(height: 8),
         Text(
           "Optional — briefly describe the situation so guidance can adapt.\nOr just skip straight to CPR below.",
           textAlign: TextAlign.center,
-          style: GoogleFonts.inter(color: Colors.white38, fontSize: 13, height: 1.5),
+          style: GoogleFonts.inter(
+            color: Colors.white38,
+            fontSize: 13,
+            height: 1.5,
+          ),
         ),
         const SizedBox(height: 28),
         GestureDetector(
@@ -180,22 +213,38 @@ class _TriageScreenState extends State<TriageScreen> {
             height: 84,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: _isListening ? const Color(0xFFE63946) : const Color(0xFF1A1A2E),
-              border: Border.all(color: const Color(0xFFE63946).withValues(alpha: 0.5), width: 2),
+              color: _isListening
+                  ? const Color(0xFFE63946)
+                  : const Color(0xFF1A1A2E),
+              border: Border.all(
+                color: const Color(0xFFE63946).withValues(alpha: 0.5),
+                width: 2,
+              ),
             ),
-            child: Icon(_isListening ? Icons.mic : Icons.mic_none, color: Colors.white, size: 36),
+            child: Icon(
+              _isListening ? Icons.mic : Icons.mic_none,
+              color: Colors.white,
+              size: 36,
+            ),
           ),
         ),
         const SizedBox(height: 16),
         if (_isThinking)
-          Text('Checking protocol...', style: GoogleFonts.inter(color: Colors.white54, fontSize: 13)),
+          Text(
+            'Checking protocol...',
+            style: GoogleFonts.inter(color: Colors.white54, fontSize: 13),
+          ),
         if (_recognizedText != null && !_isThinking)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Text(
               'YOU: "$_recognizedText"',
               textAlign: TextAlign.center,
-              style: GoogleFonts.inter(color: Colors.white54, fontSize: 13, fontStyle: FontStyle.italic),
+              style: GoogleFonts.inter(
+                color: Colors.white54,
+                fontSize: 13,
+                fontStyle: FontStyle.italic,
+              ),
             ),
           ),
         if (!_ollama.isAvailable)
@@ -220,7 +269,9 @@ class _TriageScreenState extends State<TriageScreen> {
           decoration: BoxDecoration(
             color: const Color(0xFF3498DB).withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFF3498DB).withValues(alpha: 0.3)),
+            border: Border.all(
+              color: const Color(0xFF3498DB).withValues(alpha: 0.3),
+            ),
           ),
           child: Row(
             children: [
@@ -229,34 +280,65 @@ class _TriageScreenState extends State<TriageScreen> {
               Expanded(
                 child: Text(
                   protocol.voiceIntro,
-                  style: GoogleFonts.inter(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],
           ),
         ),
         const SizedBox(height: 20),
-        Text('${protocol.label.toUpperCase()} PROTOCOL', style: GoogleFonts.inter(color: const Color(0xFFE63946), fontSize: 13, fontWeight: FontWeight.w700, letterSpacing: 1.5)),
+        Text(
+          '${protocol.label.toUpperCase()} PROTOCOL',
+          style: GoogleFonts.inter(
+            color: const Color(0xFFE63946),
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1.5,
+          ),
+        ),
         const SizedBox(height: 12),
-        ...protocol.steps.asMap().entries.map((entry) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 24,
-                    height: 24,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.08), shape: BoxShape.circle),
-                    child: Text('${entry.key + 1}', style: GoogleFonts.inter(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w700)),
+        ...protocol.steps.asMap().entries.map(
+          (entry) => Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 24,
+                  height: 24,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.08),
+                    shape: BoxShape.circle,
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(entry.value, style: GoogleFonts.inter(color: Colors.white70, fontSize: 14, height: 1.4)),
+                  child: Text(
+                    '${entry.key + 1}',
+                    style: GoogleFonts.inter(
+                      color: Colors.white70,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                ],
-              ),
-            )),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    entry.value,
+                    style: GoogleFonts.inter(
+                      color: Colors.white70,
+                      fontSize: 14,
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
         const SizedBox(height: 8),
         SizedBox(
           width: double.infinity,
@@ -266,10 +348,19 @@ class _TriageScreenState extends State<TriageScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFE63946),
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
               elevation: 0,
             ),
-            child: Text('PERSON IS UNRESPONSIVE — START CPR', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700, letterSpacing: 1)),
+            child: Text(
+              'PERSON IS UNRESPONSIVE — START CPR',
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1,
+              ),
+            ),
           ),
         ),
       ],
@@ -286,14 +377,24 @@ class _TriageScreenState extends State<TriageScreen> {
           onPressed: _goToCpr,
           style: OutlinedButton.styleFrom(
             side: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Icon(Icons.arrow_forward, color: Colors.white70, size: 18),
               const SizedBox(width: 8),
-              Text('SKIP — START CPR NOW', style: GoogleFonts.inter(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.w700, letterSpacing: 1.5)),
+              Text(
+                'SKIP — START CPR NOW',
+                style: GoogleFonts.inter(
+                  color: Colors.white70,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.5,
+                ),
+              ),
             ],
           ),
         ),

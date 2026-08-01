@@ -9,7 +9,8 @@ import 'package:health/health.dart';
 /// Connect install, a denied permission, or an unsupported device degrades to
 /// "logging unavailable" and never touches the CPR coaching flow above it.
 class HealthConnectService {
-  static final HealthConnectService _instance = HealthConnectService._internal();
+  static final HealthConnectService _instance =
+      HealthConnectService._internal();
   factory HealthConnectService() => _instance;
   HealthConnectService._internal();
 
@@ -35,7 +36,10 @@ class HealthConnectService {
       const types = [HealthDataType.WORKOUT];
       const permissions = [HealthDataAccess.READ_WRITE];
 
-      final authorized = await _health.requestAuthorization(types, permissions: permissions);
+      final authorized = await _health.requestAuthorization(
+        types,
+        permissions: permissions,
+      );
       if (!authorized) return false;
 
       final end = DateTime.now();

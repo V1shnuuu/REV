@@ -3,7 +3,6 @@ import 'package:google_fonts/google_fonts.dart';
 import '../services/ollama_service.dart';
 import '../services/stt_service.dart';
 import '../services/tts_service.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import '../constants/app_config.dart';
 
@@ -13,7 +12,7 @@ class ChatMessage {
   final DateTime timestamp;
 
   ChatMessage({required this.text, required this.isUser})
-      : timestamp = DateTime.now();
+    : timestamp = DateTime.now();
 }
 
 class ChatScreen extends StatefulWidget {
@@ -23,7 +22,8 @@ class ChatScreen extends StatefulWidget {
   State<ChatScreen> createState() => _ChatScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin, WidgetsBindingObserver {
+class _ChatScreenState extends State<ChatScreen>
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   final OllamaService _ollama = OllamaService();
   final SttService _stt = SttService();
   final TtsService _tts = TtsService();
@@ -54,11 +54,13 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin, 
       setState(() => _ollamaAvailable = available);
 
       // Welcome message from Gemma
-      _messages.add(ChatMessage(
-        text:
-            "Hi! I'm Revive AI, your first-aid assistant powered by Gemma 4. Ask me anything about CPR, choking, AED usage, or emergency procedures. You can type or tap the mic to speak!",
-        isUser: false,
-      ));
+      _messages.add(
+        ChatMessage(
+          text:
+              "Hi! I'm Revive AI, your first-aid assistant powered by Gemma 4. Ask me anything about CPR, choking, AED usage, or emergency procedures. You can type or tap the mic to speak!",
+          isUser: false,
+        ),
+      );
       setState(() {});
     }
   }
@@ -87,7 +89,9 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin, 
       setState(() => _ollamaAvailable = available);
     }
 
-    final String? response = available ? await _ollama.chatAnswer(text.trim()) : null;
+    final String? response = available
+        ? await _ollama.chatAnswer(text.trim())
+        : null;
 
     if (mounted) {
       final responseText = response ?? _offlineMessage;
@@ -136,8 +140,8 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin, 
   bool _isEmergencyPhrase(String text) {
     final lower = text.toLowerCase();
     return lower.contains(AppConfig.emergencyNumber) ||
-           lower.contains('emergency') ||
-           lower.contains('ambulance');
+        lower.contains('emergency') ||
+        lower.contains('ambulance');
   }
 
   void _scrollToBottom() {
@@ -165,7 +169,8 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin, 
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused || state == AppLifecycleState.detached) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached) {
       _tts.stop();
       _stt.stopListening();
     }
@@ -243,7 +248,9 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin, 
                 : ListView.builder(
                     controller: _scrollController,
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 12),
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                     itemCount: _messages.length + (_isLoading ? 1 : 0),
                     itemBuilder: (context, index) {
                       if (index == _messages.length && _isLoading) {
@@ -269,15 +276,15 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin, 
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.chat_bubble_outline,
-              color: Colors.white.withValues(alpha: 0.1), size: 64),
+          Icon(
+            Icons.chat_bubble_outline,
+            color: Colors.white.withValues(alpha: 0.1),
+            size: 64,
+          ),
           const SizedBox(height: 16),
           Text(
             'Ask me about CPR & First Aid',
-            style: GoogleFonts.inter(
-              color: Colors.white24,
-              fontSize: 16,
-            ),
+            style: GoogleFonts.inter(color: Colors.white24, fontSize: 16),
           ),
         ],
       ),
@@ -313,9 +320,11 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin, 
               ),
               backgroundColor: const Color(0xFF1A1A2E),
               side: BorderSide(
-                  color: const Color(0xFFE63946).withValues(alpha: 0.3)),
+                color: const Color(0xFFE63946).withValues(alpha: 0.3),
+              ),
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20)),
+                borderRadius: BorderRadius.circular(20),
+              ),
               onPressed: () => _sendMessage(suggestions[index]),
             ),
           );
@@ -330,8 +339,9 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin, 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
-        mainAxisAlignment:
-            isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment: isUser
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (!isUser) ...[
@@ -344,8 +354,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin, 
                 ),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child:
-                  const Icon(Icons.smart_toy, color: Colors.white, size: 16),
+              child: const Icon(Icons.smart_toy, color: Colors.white, size: 16),
             ),
             const SizedBox(width: 8),
           ],
@@ -364,8 +373,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin, 
                 ),
                 border: isUser
                     ? null
-                    : Border.all(
-                        color: Colors.white.withValues(alpha: 0.06)),
+                    : Border.all(color: Colors.white.withValues(alpha: 0.06)),
               ),
               child: Text(
                 message.text,
@@ -494,8 +502,9 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin, 
                     boxShadow: _isListening
                         ? [
                             BoxShadow(
-                              color:
-                                  const Color(0xFFE63946).withValues(alpha: glow),
+                              color: const Color(
+                                0xFFE63946,
+                              ).withValues(alpha: glow),
                               blurRadius: 20,
                               spreadRadius: 5,
                             ),
@@ -528,11 +537,15 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin, 
                   hintText: _isListening
                       ? 'Listening...'
                       : 'Ask about CPR, first aid...',
-                  hintStyle:
-                      GoogleFonts.inter(color: Colors.white24, fontSize: 14),
+                  hintStyle: GoogleFonts.inter(
+                    color: Colors.white24,
+                    fontSize: 14,
+                  ),
                   border: InputBorder.none,
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                 ),
                 onSubmitted: _sendMessage,
                 textInputAction: TextInputAction.send,
