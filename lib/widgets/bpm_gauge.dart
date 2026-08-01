@@ -111,7 +111,8 @@ class BpmGauge extends StatelessWidget {
             borderRadius: BorderRadius.circular(4),
             child: SizedBox(
               height: 6,
-              child: Stack(
+              child: LayoutBuilder(
+                builder: (context, constraints) => Stack(
                 children: [
                   // Background
                   Container(
@@ -150,11 +151,11 @@ class BpmGauge extends StatelessWidget {
                   // Current BPM indicator
                   if (reading.bpm > 0)
                     Positioned(
-                      left: _bpmToPosition(reading.bpm, 1.0),
+                      left: _bpmToPosition(reading.bpm, constraints.maxWidth),
                       top: 0,
                       bottom: 0,
                       child: Container(
-                        width: 4,
+                        width: _markerWidth,
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(2),
@@ -168,6 +169,7 @@ class BpmGauge extends StatelessWidget {
                       ),
                     ),
                 ],
+                ),
               ),
             ),
           ),
@@ -204,9 +206,20 @@ class BpmGauge extends StatelessWidget {
     );
   }
 
-  double _bpmToPosition(double bpm, double maxWidth) {
-    // Map BPM 60-200 to 0-maxWidth
-    return ((bpm - 60) / 140).clamp(0.0, 1.0) * maxWidth;
+  /// Width of the current-BPM marker, subtracted from the usable track so the
+  /// marker stays fully inside the rail at 200 BPM instead of half-clipping.
+  static const double _markerWidth = 4;
+
+  /// Maps a BPM reading onto a pixel offset along the track.
+  ///
+  /// [trackWidth] must be the measured pixel width of the rail. This
+  /// previously received a hardcoded 1.0, which made the function return a
+  /// 0..1 fraction that was then used directly as a pixel offset — pinning
+  /// the marker within 1px of the left edge at every BPM. The gauge rail
+  /// therefore never actually tracked the rhythm it was supposed to show.
+  double _bpmToPosition(double bpm, double trackWidth) {
+    final double fraction = ((bpm - 60) / 140).clamp(0.0, 1.0);
+    return fraction * (trackWidth - _markerWidth).clamp(0.0, double.infinity);
   }
 
   Widget _buildMetric(String label, String value, Color color) {
