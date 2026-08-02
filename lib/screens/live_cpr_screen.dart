@@ -1,18 +1,23 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
+
+import '../constants/app_config.dart';
 import '../services/audio_service.dart';
+import '../services/health_connect_service.dart';
 import '../services/motion_service.dart';
-import '../services/tts_service.dart';
 import '../services/ollama_service.dart';
 import '../services/stt_service.dart';
-import '../services/health_connect_service.dart';
-import '../constants/app_config.dart';
+import '../services/tts_service.dart';
+import '../theme/app_theme.dart';
+import '../widgets/components/revive_bpm_gauge.dart';
+import '../widgets/components/revive_button.dart';
+import '../widgets/components/revive_card.dart';
+import '../widgets/components/revive_state_view.dart';
+import '../widgets/components/voice_activity_indicator.dart';
 import '../widgets/cpr_body_animation.dart';
-import '../widgets/bpm_gauge.dart';
-import 'package:wakelock_plus/wakelock_plus.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 
 class LiveCprScreen extends StatefulWidget {
   const LiveCprScreen({super.key});
@@ -42,9 +47,9 @@ class _LiveCprScreenState extends State<LiveCprScreen>
   // Voice assistant state
   bool _isListening = false;
   bool _isAiThinking = false;
+  bool _micDenied = false;
   String? _aiResponse;
   String? _recognizedText;
-  late AnimationController _micPulseController;
 
   @override
   void initState() {
@@ -64,10 +69,6 @@ class _LiveCprScreenState extends State<LiveCprScreen>
     _stt.initialize();
     WakelockPlus.enable();
     WidgetsBinding.instance.addObserver(this);
-    _micPulseController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 800),
-    );
   }
 
   @override
@@ -79,7 +80,6 @@ class _LiveCprScreenState extends State<LiveCprScreen>
     _bpmSubscription?.cancel();
     _elapsedTimer?.cancel();
     _availabilityTimer?.cancel();
-    _micPulseController.dispose();
     _stt.stopListening();
     _tts.setOnComplete(null);
     _tts.stop();
@@ -236,9 +236,18 @@ class _LiveCprScreenState extends State<LiveCprScreen>
   /// Auto-start continuous hands-free voice listening
   Future<void> _startContinuousVoice() async {
     final initialized = await _stt.initialize();
-    if (!initialized) return;
+    if (!initialized) {
+      // Previously this returned silently, leaving the rescuer with a dead
+      // mic and no explanation. Surface it as a degraded state instead —
+      // everything else on this screen keeps working.
+      if (mounted) setState(() => _micDenied = true);
+      return;
+    }
 
-    setState(() => _isListening = true);
+    setState(() {
+      _isListening = true;
+      _micDenied = false;
+    });
     _audio.setVolume(0.3); // Lower volume to help mic hear clearly
 
     await _stt.startContinuousListening(
@@ -307,31 +316,9 @@ class _LiveCprScreenState extends State<LiveCprScreen>
     return tip;
   }
 
-  Color _getFeedbackColor(BpmStatus status) {
-    switch (status) {
-      case BpmStatus.good:
-        return const Color(0xFF2ECC71);
-      case BpmStatus.tooSlow:
-        return const Color(0xFFF39C12);
-      case BpmStatus.tooFast:
-        return const Color(0xFFE74C3C);
-      case BpmStatus.waiting:
-        return const Color(0xFFE63946);
-    }
-  }
-
-  String _getFeedbackText(BpmStatus status) {
-    switch (status) {
-      case BpmStatus.good:
-        return 'PERFECT RHYTHM';
-      case BpmStatus.tooSlow:
-        return 'PUSH FASTER';
-      case BpmStatus.tooFast:
-        return 'SLOW DOWN';
-      case BpmStatus.waiting:
-        return 'FOLLOW THE RHYTHM';
-    }
-  }
+  // ---------------------------------------------------------------------------
+  // Presentation
+  // ---------------------------------------------------------------------------
 
   String get _elapsedFormatted {
     final m = (_elapsedSeconds ~/ 60).toString().padLeft(2, '0');
@@ -339,210 +326,144 @@ class _LiveCprScreenState extends State<LiveCprScreen>
     return '$m:$s';
   }
 
+  /// Maps the screen's individual voice flags onto a single indicator state.
+  VoiceActivityState get _voiceState {
+    if (_isAiThinking) return VoiceActivityState.thinking;
+    if (_aiResponse != null) return VoiceActivityState.speaking;
+    if (_isListening) return VoiceActivityState.listening;
+    return VoiceActivityState.idle;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
+
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0F),
+      backgroundColor: c.surfacePrimary,
       body: SafeArea(
-        child: Stack(
+        child: Column(
           children: [
-            // Main content
-            Column(
-              children: [
-                _buildHeader(),
-                if (!_isActive) const Spacer(),
-                if (_showBreathPrompt) _buildBreathPrompt(),
-                if (_isActive) ...[
-                  Expanded(
-                    child: StreamBuilder<BpmReading>(
-                      stream: _motion.bpmStream,
-                      initialData: BpmReading.initial,
-                      builder: (context, snapshot) {
-                        final reading = snapshot.data ?? BpmReading.initial;
-                        final statusColor = _getFeedbackColor(reading.status);
-                        final statusText = _getFeedbackText(reading.status);
-
-                        return LayoutBuilder(
-                          builder: (context, constraints) {
-                            final bool isSmall = constraints.maxHeight < 400;
-                            return SingleChildScrollView(
-                              child: Column(
-                                children: [
-                                  GestureDetector(
-                                    behavior: HitTestBehavior.opaque,
-                                    onTap: () {
-                                      _motion.simulateCompression();
-                                    },
-                                    child: SizedBox(
-                                      height: isSmall
-                                          ? 150
-                                          : constraints.maxHeight * 0.45,
-                                      child: FittedBox(
-                                        fit: BoxFit.contain,
-                                        child: CprBodyAnimation(
-                                          feedbackColor: statusColor,
-                                          feedbackText: statusText,
-                                          compressionCount:
-                                              reading.compressionCount,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 6,
-                                      horizontal: 20,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: const Color(
-                                        0xFFE63946,
-                                      ).withValues(alpha: 0.1),
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(
-                                        color: const Color(
-                                          0xFFE63946,
-                                        ).withValues(alpha: 0.2),
-                                      ),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(
-                                          'CYCLE PROGRESS: ',
-                                          style: GoogleFonts.inter(
-                                            color: const Color(
-                                              0xFFE63946,
-                                            ).withValues(alpha: 0.7),
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.w700,
-                                            letterSpacing: 1.5,
-                                          ),
-                                        ),
-                                        Text(
-                                          '${reading.compressionCount > 0 && reading.compressionCount % 30 == 0 ? 30 : reading.compressionCount % 30} / 30',
-                                          style: GoogleFonts.outfit(
-                                            color: const Color(0xFFE63946),
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w800,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 24,
-                                    ),
-                                    child: BpmGauge(reading: reading),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    ),
-                  ),
-                ] else ...[
-                  const Spacer(),
-                  _buildStartPrompt(),
-                  const Spacer(),
-                ],
-                if (_isActive) ...[
-                  if (_isAiThinking ||
-                      _aiResponse != null ||
-                      _recognizedText != null)
-                    _buildSubtleVoiceInfo(),
-                ],
-                _buildBottomControls(),
-                const SizedBox(height: 8),
-              ],
-            ),
-
-            // Subtle indicator for active listening is now moved to the header for better visibility
+            _buildHeader(),
+            if (_isActive)
+              Expanded(child: _buildActiveSession())
+            else
+              Expanded(child: _buildIdleState()),
+            _buildBottomControls(),
+            AppSpacing.gapSm,
           ],
         ),
       ),
     );
   }
 
-  /// Always-on mic indicator showing voice assistant is active
-  Widget _buildMicIndicator() {
-    _micPulseController.repeat(reverse: true);
-    return AnimatedBuilder(
-      animation: _micPulseController,
-      builder: (context, child) {
-        final glow = _micPulseController.value * 0.5;
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1A1A2E),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: const Color(0xFF2ECC71).withValues(alpha: 0.5),
-              width: 1.5,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF2ECC71).withValues(alpha: glow),
-                blurRadius: 15,
-                spreadRadius: 2,
+  Widget _buildActiveSession() {
+    return StreamBuilder<BpmReading>(
+      stream: _motion.bpmStream,
+      initialData: BpmReading.initial,
+      builder: (context, snapshot) {
+        final reading = snapshot.data ?? BpmReading.initial;
+
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            // The chest animation is the first thing sacrificed on short
+            // screens — the gauge is what the rescuer actually needs, so it
+            // keeps its full size while the illustration shrinks.
+            final bool isShort = constraints.maxHeight < 560;
+
+            return SingleChildScrollView(
+              padding: AppSpacing.pagePadding,
+              child: Column(
+                children: [
+                  if (_showBreathPrompt) ...[
+                    _buildBreathPrompt(),
+                    AppSpacing.gapMd,
+                  ],
+                  Semantics(
+                    label:
+                        'Chest compression animation. '
+                        'Tap to register a compression manually.',
+                    button: true,
+                    excludeSemantics: true,
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: _motion.simulateCompression,
+                      child: SizedBox(
+                        height: isShort ? 140 : constraints.maxHeight * 0.34,
+                        child: FittedBox(
+                          fit: BoxFit.contain,
+                          child: CprBodyAnimation(
+                            feedbackColor: ReviveBpmGauge.accentFor(
+                              context,
+                              reading.status,
+                            ),
+                            feedbackText: ReviveBpmGauge.labelFor(
+                              reading.status,
+                            ),
+                            compressionCount: reading.compressionCount,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  AppSpacing.gapMd,
+                  _buildCycleProgress(reading),
+                  AppSpacing.gapMd,
+                  ReviveBpmGauge(reading: reading),
+                  AppSpacing.gapMd,
+                  if (_micDenied)
+                    ReviveStateView.micPermissionDenied(
+                      onOpenSettings: openAppSettings,
+                    )
+                  else
+                    VoiceActivityIndicator(
+                      state: _voiceState,
+                      transcript: _aiResponse ?? _recognizedText,
+                    ),
+                  AppSpacing.gapMd,
+                ],
               ),
-            ],
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 8,
-                height: 8,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF2ECC71),
-                  shape: BoxShape.circle,
-                ),
-              ),
-              const SizedBox(width: 6),
-              Text(
-                'MIC ON',
-                style: GoogleFonts.inter(
-                  color: const Color(0xFF2ECC71),
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 1,
-                ),
-              ),
-            ],
-          ),
+            );
+          },
         );
       },
     );
   }
 
-  /// Shown whenever the AI tunnel is unreachable, so it's visually obvious
-  /// that core CPR coaching (compressions, rhythm, breath prompts) is still
-  /// running fine on-device — only the adaptive voice assistant is degraded.
-  Widget _buildAiOfflinePill() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1A1A2E),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white24, width: 1.5),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+  Widget _buildCycleProgress(BpmReading reading) {
+    final c = context.colors;
+    final int inCycle = reading.compressionCount > 0
+        ? (reading.compressionCount % 30 == 0
+              ? 30
+              : reading.compressionCount % 30)
+        : 0;
+
+    return Semantics(
+      label: '$inCycle of 30 compressions in this cycle',
+      excludeSemantics: true,
+      child: Column(
         children: [
-          const Icon(Icons.cloud_off, color: Colors.white54, size: 12),
-          const SizedBox(width: 5),
-          Text(
-            'AI OFFLINE',
-            style: GoogleFonts.inter(
-              color: Colors.white54,
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1,
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'CYCLE PROGRESS  ',
+                style: context.text.labelSmall?.copyWith(color: c.textTertiary),
+              ),
+              Text(
+                '$inCycle / 30',
+                style: context.text.titleMedium?.copyWith(color: c.textPrimary),
+              ),
+            ],
+          ),
+          AppSpacing.gapXs,
+          ClipRRect(
+            borderRadius: AppRadius.borderXs,
+            child: LinearProgressIndicator(
+              value: inCycle / 30,
+              minHeight: 4,
+              backgroundColor: c.surfaceOverlay,
+              valueColor: AlwaysStoppedAnimation<Color>(c.urgentAction),
             ),
           ),
         ],
@@ -550,62 +471,81 @@ class _LiveCprScreenState extends State<LiveCprScreen>
     );
   }
 
-  /// Subtle voice assistant info displayed at the bottom
-  Widget _buildSubtleVoiceInfo() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1A1A2E).withValues(alpha: 0.9),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFFE63946).withValues(alpha: 0.3),
-        ),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (_recognizedText != null)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 4),
-              child: Text(
-                'YOU: "$_recognizedText"',
-                style: GoogleFonts.inter(
-                  color: Colors.white70,
-                  fontSize: 12,
-                  fontStyle: FontStyle.italic,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+  Widget _buildIdleState() {
+    final c = context.colors;
+    return Center(
+      child: SingleChildScrollView(
+        padding: AppSpacing.pagePadding,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.favorite_border,
+              color: c.urgentAction.withValues(alpha: 0.35),
+              size: 72,
+            ),
+            AppSpacing.gapXl,
+            Text(
+              'READY TO START',
+              style: context.text.headlineLarge?.copyWith(color: c.textPrimary),
+            ),
+            AppSpacing.gapSm,
+            Text(
+              'Place the phone on a flat surface, or hold it against the chest '
+              'while you push.',
+              textAlign: TextAlign.center,
+              style: context.text.bodyMedium?.copyWith(color: c.textSecondary),
+            ),
+            AppSpacing.gapXl,
+            ReviveCard(
+              tone: ReviveCardTone.critical,
+              child: Row(
+                children: [
+                  Icon(Icons.phone_in_talk, color: c.urgentAction, size: 22),
+                  AppSpacing.hGapMd,
+                  Expanded(
+                    child: Text(
+                      'Call ${AppConfig.emergencyNumber} first if you have not '
+                      'already. Say "emergency" any time to dial hands-free.',
+                      style: context.text.bodySmall?.copyWith(
+                        color: c.textSecondary,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-          Row(
-            children: [
-              if (_isAiThinking)
-                const SizedBox(
-                  width: 12,
-                  height: 12,
-                  child: CircularProgressIndicator(
-                    color: Color(0xFFE63946),
-                    strokeWidth: 2,
-                  ),
-                )
-              else
-                const Icon(Icons.smart_toy, color: Color(0xFFE63946), size: 16),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  _isAiThinking
-                      ? 'Gemma 4 is thinking...'
-                      : _aiResponse ?? 'Listening...',
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBreathPrompt() {
+    final c = context.colors;
+    return ReviveCard(
+      tone: ReviveCardTone.info,
+      child: Row(
+        children: [
+          Icon(Icons.air, color: c.infoCalm, size: 28),
+          AppSpacing.hGapMd,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'RESCUE BREATHS',
+                  style: context.text.labelSmall?.copyWith(color: c.infoCalm),
+                ),
+                AppSpacing.gapXs,
+                Text(
+                  'Give 2 breaths now, then continue compressions',
+                  style: context.text.bodyMedium?.copyWith(
+                    color: c.textPrimary,
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
@@ -613,194 +553,111 @@ class _LiveCprScreenState extends State<LiveCprScreen>
   }
 
   Widget _buildHeader() {
+    final c = context.colors;
+
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.sm,
+      ),
       child: Row(
         children: [
-          GestureDetector(
-            onTap: () {
-              if (_isActive) _stopSession();
-              Navigator.pop(context);
-            },
-            child: Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(12),
+          Semantics(
+            label: 'Close CPR mode',
+            button: true,
+            excludeSemantics: true,
+            child: GestureDetector(
+              onTap: () {
+                if (_isActive) _stopSession();
+                Navigator.pop(context);
+              },
+              child: Container(
+                width: AppTouchTarget.minimum,
+                height: AppTouchTarget.minimum,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: c.surfaceRaised,
+                  borderRadius: AppRadius.borderSm,
+                ),
+                child: Icon(Icons.close, color: c.textSecondary, size: 20),
               ),
-              child: const Icon(Icons.close, color: Colors.white70, size: 18),
             ),
           ),
-          const Spacer(),
-          if (_isActive) ...[
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: const Color(0xFFE63946).withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 8,
-                    height: 8,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFE63946),
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'LIVE',
-                    style: GoogleFonts.inter(
-                      color: const Color(0xFFE63946),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1.5,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            // Integrated Mic Indicator in header to avoid overlapping with AI response
-            if (_isListening) _buildMicIndicator(),
-            if (!_ollama.isAvailable) ...[
-              const SizedBox(width: 8),
-              _buildAiOfflinePill(),
-            ],
-            const Spacer(),
-            Text(
-              _elapsedFormatted,
-              style: GoogleFonts.outfit(
-                color: Colors.white54,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ] else ...[
-            Text(
-              'LIVE CPR MODE',
-              style: GoogleFonts.inter(
-                color: Colors.white54,
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 2,
-              ),
-            ),
-            const Spacer(),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBreathPrompt() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF3498DB).withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFF3498DB).withValues(alpha: 0.3),
-        ),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.air, color: Color(0xFF3498DB), size: 28),
-          const SizedBox(width: 12),
+          AppSpacing.hGapSm,
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Wrap(
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.xs,
+              alignment: WrapAlignment.center,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                Text(
-                  'RESCUE BREATHS',
-                  style: GoogleFonts.inter(
-                    color: const Color(0xFF3498DB),
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1.5,
+                if (_isActive)
+                  const ReviveStatusPill(
+                    label: 'LIVE',
+                    icon: Icons.fiber_manual_record,
+                    tone: ReviveCardTone.critical,
+                    semanticLabel: 'Session is live',
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Give 2 breaths now, then continue',
-                  style: GoogleFonts.inter(color: Colors.white70, fontSize: 14),
-                ),
+                if (_isActive && _isListening && !_micDenied)
+                  const ReviveStatusPill(
+                    label: 'MIC ON',
+                    icon: Icons.mic,
+                    tone: ReviveCardTone.success,
+                    semanticLabel: 'Microphone is listening',
+                  ),
+                if (!_ollama.isAvailable)
+                  const ReviveStatusPill(
+                    label: 'AI OFFLINE',
+                    icon: Icons.cloud_off,
+                    tone: ReviveCardTone.caution,
+                    semanticLabel:
+                        'AI guidance offline. Core CPR coaching still active.',
+                  ),
+                if (!_isActive)
+                  Text(
+                    'LIVE CPR MODE',
+                    style: context.text.labelMedium?.copyWith(
+                      color: c.textTertiary,
+                    ),
+                  ),
               ],
             ),
           ),
+          AppSpacing.hGapSm,
+          SizedBox(
+            width: 56,
+            child: _isActive
+                ? Semantics(
+                    label: 'Elapsed time $_elapsedFormatted',
+                    excludeSemantics: true,
+                    child: Text(
+                      _elapsedFormatted,
+                      textAlign: TextAlign.end,
+                      style: context.text.titleMedium?.copyWith(
+                        color: c.textSecondary,
+                      ),
+                    ),
+                  )
+                : const SizedBox.shrink(),
+          ),
         ],
       ),
-    );
-  }
-
-  Widget _buildStartPrompt() {
-    return Column(
-      children: [
-        Icon(
-          Icons.fitness_center,
-          color: const Color(0xFFE63946).withValues(alpha: 0.3),
-          size: 80,
-        ),
-        const SizedBox(height: 24),
-        Text(
-          'READY TO START',
-          style: GoogleFonts.outfit(
-            color: Colors.white,
-            fontSize: 24,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'Place phone on a flat surface\nor hold it while doing CPR',
-          style: GoogleFonts.inter(
-            color: Colors.white38,
-            fontSize: 14,
-            height: 1.5,
-          ),
-          textAlign: TextAlign.center,
-        ),
-      ],
     );
   }
 
   Widget _buildBottomControls() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: SizedBox(
-        width: double.infinity,
-        height: 48,
-        child: ElevatedButton(
-          onPressed: _isActive ? _stopSession : _startSession,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: _isActive
-                ? Colors.white.withValues(alpha: 0.1)
-                : const Color(0xFFE63946),
-            foregroundColor: Colors.white,
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(_isActive ? Icons.stop : Icons.play_arrow, size: 24),
-              const SizedBox(width: 8),
-              Text(
-                _isActive ? 'STOP SESSION' : 'BEGIN COMPRESSIONS',
-                style: GoogleFonts.inter(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 1.5,
-                ),
-              ),
-            ],
-          ),
-        ),
+      padding: AppSpacing.pagePadding,
+      child: ReviveButton(
+        label: _isActive ? 'STOP SESSION' : 'BEGIN COMPRESSIONS',
+        icon: _isActive ? Icons.stop : Icons.play_arrow,
+        // Critical size: this is hit one-handed, under stress, often without
+        // looking directly at it.
+        size: ReviveButtonSize.critical,
+        variant: _isActive
+            ? ReviveButtonVariant.secondary
+            : ReviveButtonVariant.primary,
+        onPressed: _isActive ? _stopSession : _startSession,
       ),
     );
   }

@@ -35,9 +35,12 @@ class ReviveBpmGauge extends StatelessWidget {
   static const double _targetLow = 100;
   static const double _targetHigh = 120;
 
-  Color _accent(BuildContext context) {
+  /// Status -> accent colour. Exposed statically so other widgets that must
+  /// agree with the gauge (the chest animation on the live screen) resolve the
+  /// same colour instead of duplicating the switch and drifting out of sync.
+  static Color accentFor(BuildContext context, BpmStatus status) {
     final c = context.colors;
-    return switch (reading.status) {
+    return switch (status) {
       BpmStatus.good => c.inRangeSuccess,
       BpmStatus.tooSlow => c.belowRangeWarning,
       BpmStatus.tooFast => c.aboveRangeWarning,
@@ -45,19 +48,27 @@ class ReviveBpmGauge extends StatelessWidget {
     };
   }
 
-  IconData get _icon => switch (reading.status) {
+  /// Status -> icon. Direction is meaningful: up means push faster, down means
+  /// slow down, so the icon carries the instruction without colour or text.
+  static IconData iconFor(BpmStatus status) => switch (status) {
     BpmStatus.good => Icons.check_circle,
     BpmStatus.tooSlow => Icons.keyboard_double_arrow_up,
     BpmStatus.tooFast => Icons.keyboard_double_arrow_down,
     BpmStatus.waiting => Icons.touch_app,
   };
 
-  String get _label => switch (reading.status) {
+  /// Status -> imperative label. Phrased as the action to take, not the state
+  /// observed: "PUSH FASTER" beats "TOO SLOW" when read at a glance mid-CPR.
+  static String labelFor(BpmStatus status) => switch (status) {
     BpmStatus.good => 'GOOD RHYTHM',
     BpmStatus.tooSlow => 'PUSH FASTER',
     BpmStatus.tooFast => 'SLOW DOWN',
     BpmStatus.waiting => 'START PUSHING',
   };
+
+  Color _accent(BuildContext context) => accentFor(context, reading.status);
+  IconData get _icon => iconFor(reading.status);
+  String get _label => labelFor(reading.status);
 
   /// Spoken/screen-reader description. Deliberately fuller than the visual
   /// label, because a screen-reader user gets no colour or position cue.
