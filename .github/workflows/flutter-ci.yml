@@ -39,12 +39,10 @@ jobs:
         run: dart format --output=none --set-exit-if-changed lib test tool
 
       - name: Analyze
-        # The project currently has 12 known info-level issues, all in the
-        # service layer (debug prints, speech_to_text deprecations). Those are
-        # tracked separately; --no-fatal-infos keeps CI honest about errors and
-        # warnings without going red on them. Remove this flag once they're
-        # addressed.
-        run: flutter analyze --no-fatal-infos
+        # No --no-fatal-infos: the project analyzes completely clean, so any
+        # new info-level issue should fail CI rather than accumulate. This is
+        # how the withOpacity deprecations went unnoticed for so long.
+        run: flutter analyze
 
       - name: Test
         run: flutter test

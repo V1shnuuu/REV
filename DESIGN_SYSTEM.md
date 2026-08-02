@@ -196,7 +196,7 @@ This system is enforced by tooling, not by convention. Everything below runs on
 | **Compression logic** (`test/motion_service_test.dart`) | Debounce, BPM calculation, threshold classification. |
 
 ```bash
-flutter analyze --no-fatal-infos
+flutter analyze          # clean: no errors, warnings or infos
 flutter test
 python tool/contrast_check.py
 ```
@@ -215,8 +215,10 @@ timer rebuilding the entire live CPR screen.
 - **iOS has never been built.** Android only.
 - **Light mode has never been seen by a human.** It is proven to lay out
   correctly at every size, which is not the same as looking right.
-- 12 analyzer infos remain in the service layer (debug `print` calls and
-  `speech_to_text` deprecations). CI passes `--no-fatal-infos`; remove that
-  flag once they are resolved.
+- **The `speech_to_text` migration to `SpeechListenOptions` is compile-verified
+  but not device-verified.** The values are unchanged and the package funnelled
+  the old parameters into exactly that object internally, so behaviour should
+  be identical — but it sits in the hands-free voice path and deserves a real
+  test on hardware.
 
 See `QA_CHECKLIST.md` for what still needs a device.

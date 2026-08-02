@@ -59,6 +59,12 @@ These have never been observed by a human. Do these before anything else.
       assistant should fall back without a 30s hang.
 - [ ] **Deny microphone permission.** Every screen using voice should show the
       degraded state with a route into settings, not a dead mic button.
+- [ ] **Speech recognition still works after the `SpeechListenOptions`
+      migration.** The deprecated `listen()` parameters were moved into the
+      options object with identical values, and it compiles — but this is the
+      hands-free voice path and has not run on hardware since the change.
+      Confirm continuous listening, the 1.4s debounce, and auto-restart all
+      still behave, and that recognition stays **on-device** in airplane mode.
 
 ## Priority 4 — platform and form factor
 
@@ -103,9 +109,4 @@ Do not spend device time on these — they run in CI and on `flutter test`.
 - **Performance profiling is not done.** Phase 6. The compression pulse and
   gauge run continuously during real use and have not been checked for dropped
   frames. This needs a profile-mode run on a physical device.
-- **12 analyzer infos remain**, all in the service layer: 8 debug `print()`
-  calls and 4 `speech_to_text` deprecations (`listenMode`, `cancelOnError`,
-  `partialResults`, `onDevice` -> `SpeechListenOptions`). Untouched because
-  they sit in the hands-free voice path. CI passes `--no-fatal-infos`; remove
-  that flag once they are addressed.
 - **iOS has never been built.** Only Android debug builds have been verified.

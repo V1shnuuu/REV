@@ -1,6 +1,7 @@
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:async';
+import 'app_log.dart';
 
 class SttService {
   final SpeechToText _speechToText = SpeechToText();
@@ -22,11 +23,11 @@ class SttService {
 
     _isInitialized = await _speechToText.initialize(
       onError: (val) {
-        print('STT Error: ${val.errorMsg} - ${val.permanent}');
+        appLog('STT Error: ${val.errorMsg} - ${val.permanent}');
         // Note: Do not call _scheduleRestart() here to avoid duplicate triggers with onStatus
       },
       onStatus: (val) {
-        print('STT Status: $val');
+        appLog('STT Status: $val');
         if (val == 'done' || val == 'notListening') {
           if (_continuousMode && !_isPaused) {
             _scheduleRestart();
@@ -107,10 +108,20 @@ class SttService {
       },
       listenFor: const Duration(seconds: 60),
       pauseFor: const Duration(seconds: 15),
-      listenMode: ListenMode.deviceDefault,
-      cancelOnError: false,
-      partialResults: true,
-      onDevice: true,
+      // Migrated from the deprecated top-level parameters. The values are
+      // unchanged: SpeechListenOptions takes the same field names with the
+      // same meanings, and listen() already funnelled the old parameters into
+      // exactly this object internally.
+      //
+      // onDevice: true is deliberate and load-bearing - it keeps speech
+      // recognition on the handset instead of routing audio to a cloud
+      // service, which is what lets voice control work with no connectivity.
+      listenOptions: SpeechListenOptions(
+        listenMode: ListenMode.deviceDefault,
+        cancelOnError: false,
+        partialResults: true,
+        onDevice: true,
+      ),
     );
   }
 

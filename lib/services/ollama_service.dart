@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../constants/emergency_protocols.dart';
+import 'app_log.dart';
 
 class OllamaService {
   // Active ngrok tunnel for judges to access Gemma 4.
@@ -74,13 +75,13 @@ Rule 5: Use simple language. Avoid medical jargon like "supine" (use "on their b
           )
           .timeout(Duration(seconds: timeoutSeconds));
 
-      print('Ollama Chat Status: ${response.statusCode}');
+      appLog('Ollama Chat Status: ${response.statusCode}');
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         String? content = data['message']?['content']?.toString().trim();
 
         if (content != null && content.isNotEmpty) {
-          print('Ollama Raw Content: $content');
+          appLog('Ollama Raw Content: $content');
 
           // Strip XML/HTML-like reasoning tags: <think>...</think> or <thinking>...</thinking>
           content = content
@@ -104,17 +105,17 @@ Rule 5: Use simple language. Avoid medical jargon like "supine" (use "on their b
           // Clean up any remaining leading/trailing markdown blocks or lines
           content = content.trim();
 
-          print('Ollama Chat Success Cleaned Content: $content');
+          appLog('Ollama Chat Success Cleaned Content: $content');
           return content;
         } else {
-          print('Ollama Chat Empty Content: ${response.body}');
+          appLog('Ollama Chat Empty Content: ${response.body}');
         }
       } else {
-        print('Ollama Chat Error Body: ${response.body}');
+        appLog('Ollama Chat Error Body: ${response.body}');
       }
       return null;
     } catch (e, stack) {
-      print('Ollama Chat Exception: $e\n$stack');
+      appLog('Ollama Chat Exception: $e\n$stack');
       return null;
     }
   }
