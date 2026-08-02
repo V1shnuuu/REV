@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../theme/app_theme.dart';
 
 /// Visual weight of a [ReviveButton].
@@ -57,9 +58,24 @@ class ReviveButton extends StatefulWidget {
 
 class _ReviveButtonState extends State<ReviveButton> {
   bool _pressed = false;
+  bool _focused = false;
 
   void _setPressed(bool value) {
     if (_pressed != value) setState(() => _pressed = value);
+  }
+
+  /// Enter and Space activate a focused button, matching the platform
+  /// convention for keyboard and switch-access users. Without this the button
+  /// can be reached by focus but never triggered.
+  KeyEventResult _handleKey(FocusNode node, KeyEvent event) {
+    if (!widget._isEnabled) return KeyEventResult.ignored;
+    if (event is! KeyDownEvent) return KeyEventResult.ignored;
+    if (event.logicalKey == LogicalKeyboardKey.enter ||
+        event.logicalKey == LogicalKeyboardKey.space) {
+      widget.onPressed!();
+      return KeyEventResult.handled;
+    }
+    return KeyEventResult.ignored;
   }
 
   @override
@@ -141,33 +157,52 @@ class _ReviveButtonState extends State<ReviveButton> {
       // Communicates in-flight state to screen readers, which otherwise see an
       // unchanged button and no explanation for why nothing happened.
       hint: widget.isLoading ? 'Busy' : null,
+      // Required: excludeSemantics drops the GestureDetector's own tap action,
+      // and assistive tech activates controls by dispatching a *semantic* tap.
+      // Without this the button is announced but cannot be pressed.
+      onTap: enabled ? widget.onPressed : null,
+      // Reachable by keyboard and switch access, not just touch. Deliberately
+      // focusable even when disabled: a disabled control that is invisible to
+      // a screen reader leaves the user unable to tell why the action is
+      // missing. It is reached, and announced as disabled.
+      focusable: true,
+      focused: _focused,
       excludeSemantics: true,
-      child: GestureDetector(
-        onTapDown: enabled ? (_) => _setPressed(true) : null,
-        onTapUp: enabled ? (_) => _setPressed(false) : null,
-        onTapCancel: enabled ? () => _setPressed(false) : null,
-        onTap: enabled ? widget.onPressed : null,
-        child: AnimatedContainer(
-          duration: motion.duration(AppMotion.fast),
-          curve: motion.curve(AppMotion.standard),
-          height: height,
-          width: widget.fullWidth ? double.infinity : null,
-          padding: widget.fullWidth
-              ? null
-              : const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: effectiveBackground,
-            borderRadius: AppRadius.borderMd,
-            border: border,
-            boxShadow:
-                enabled &&
-                    widget.variant == ReviveButtonVariant.primary &&
-                    !_pressed
-                ? AppElevation.level1(isDark: context.isDarkMode)
-                : AppElevation.none,
+      child: Focus(
+        canRequestFocus: enabled,
+        onKeyEvent: _handleKey,
+        onFocusChange: (value) => setState(() => _focused = value),
+        child: GestureDetector(
+          onTapDown: enabled ? (_) => _setPressed(true) : null,
+          onTapUp: enabled ? (_) => _setPressed(false) : null,
+          onTapCancel: enabled ? () => _setPressed(false) : null,
+          onTap: enabled ? widget.onPressed : null,
+          child: AnimatedContainer(
+            duration: motion.duration(AppMotion.fast),
+            curve: motion.curve(AppMotion.standard),
+            height: height,
+            width: widget.fullWidth ? double.infinity : null,
+            padding: widget.fullWidth
+                ? null
+                : const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: effectiveBackground,
+              borderRadius: AppRadius.borderMd,
+              // A visible focus ring: a control that can be focused but does
+              // not show it is only half accessible.
+              border: _focused
+                  ? Border.all(color: c.textPrimary, width: 2)
+                  : border,
+              boxShadow:
+                  enabled &&
+                      widget.variant == ReviveButtonVariant.primary &&
+                      !_pressed
+                  ? AppElevation.level1(isDark: context.isDarkMode)
+                  : AppElevation.none,
+            ),
+            child: child,
           ),
-          child: child,
         ),
       ),
     );

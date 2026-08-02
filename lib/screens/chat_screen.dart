@@ -390,6 +390,7 @@ class _ChatScreenState extends State<ChatScreen>
           Semantics(
             button: true,
             label: _isListening ? 'Stop listening' : 'Ask by voice',
+            onTap: _toggleListening,
             excludeSemantics: true,
             child: GestureDetector(
               onTap: _toggleListening,
@@ -451,6 +452,7 @@ class _ChatScreenState extends State<ChatScreen>
           Semantics(
             button: true,
             label: 'Send message',
+            onTap: () => _sendMessage(_textController.text),
             excludeSemantics: true,
             child: GestureDetector(
               onTap: () => _sendMessage(_textController.text),

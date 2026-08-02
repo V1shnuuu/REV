@@ -340,6 +340,11 @@ class _LiveCprScreenState extends State<LiveCprScreen>
     return '$m:$s';
   }
 
+  void _closeScreen() {
+    if (_isActive) _stopSession();
+    Navigator.pop(context);
+  }
+
   /// Maps the screen's individual voice flags onto a single indicator state.
   VoiceActivityState get _voiceState {
     if (_isAiThinking) return VoiceActivityState.thinking;
@@ -397,6 +402,7 @@ class _LiveCprScreenState extends State<LiveCprScreen>
                         'Chest compression animation. '
                         'Tap to register a compression manually.',
                     button: true,
+                    onTap: _motion.simulateCompression,
                     excludeSemantics: true,
                     child: GestureDetector(
                       behavior: HitTestBehavior.opaque,
@@ -579,12 +585,10 @@ class _LiveCprScreenState extends State<LiveCprScreen>
           Semantics(
             label: 'Close CPR mode',
             button: true,
+            onTap: _closeScreen,
             excludeSemantics: true,
             child: GestureDetector(
-              onTap: () {
-                if (_isActive) _stopSession();
-                Navigator.pop(context);
-              },
+              onTap: _closeScreen,
               child: Container(
                 width: AppTouchTarget.minimum,
                 height: AppTouchTarget.minimum,

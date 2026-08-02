@@ -182,6 +182,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return Semantics(
       button: true,
       label: 'Start CPR. Begins a guided compression session.',
+      onTap: () => Navigator.pushNamed(context, '/triage'),
       excludeSemantics: true,
       child: GestureDetector(
         onTap: () => Navigator.pushNamed(context, '/triage'),

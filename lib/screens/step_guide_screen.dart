@@ -224,6 +224,7 @@ class _StepGuideScreenState extends State<StepGuideScreen>
           Semantics(
             label: 'Go back',
             button: true,
+            onTap: () => Navigator.pop(context),
             excludeSemantics: true,
             child: GestureDetector(
               onTap: () => Navigator.pop(context),
@@ -249,6 +250,7 @@ class _StepGuideScreenState extends State<StepGuideScreen>
           Semantics(
             label: 'Repeat voice instruction',
             button: true,
+            onTap: _speakCurrentStep,
             excludeSemantics: true,
             child: GestureDetector(
               onTap: _speakCurrentStep,
@@ -483,6 +485,7 @@ class _StepGuideScreenState extends State<StepGuideScreen>
         Semantics(
           label: 'Tap to register a practice compression',
           button: true,
+          onTap: _motionService.simulateCompression,
           excludeSemantics: true,
           child: GestureDetector(
             onTap: _motionService.simulateCompression,

@@ -77,6 +77,58 @@ PAIRINGS = [
 ]
 
 
+# Alpha-composited pairings: (foreground, overlay, overlay_alpha, base,
+# minimum_ratio, description).
+#
+# The components do not only put solid colours on solid colours. Status pills,
+# card tones and state views paint an accent at low alpha over a surface and
+# then place full-strength accent text on top. The effective background is the
+# composite, not either token on its own, so these need checking separately -
+# they are exactly the pairings a token-only audit misses.
+COMPOSITE_PAIRINGS = [
+    # ReviveStatusPill / ReviveCard: accent @ ~0.12 over a surface.
+    ("urgentAction", "urgentAction", 0.12, "surfaceRaised", AA_LARGE,
+     "pill label on urgent tint"),
+    ("inRangeSuccess", "inRangeSuccess", 0.12, "surfaceRaised", AA_LARGE,
+     "pill label on success tint"),
+    ("belowRangeWarning", "belowRangeWarning", 0.12, "surfaceRaised", AA_LARGE,
+     "pill label on caution tint"),
+    ("infoCalm", "infoCalm", 0.12, "surfaceRaised", AA_LARGE,
+     "pill label on info tint"),
+    ("noDataNeutral", "noDataNeutral", 0.12, "surfaceRaised", AA_LARGE,
+     "pill label on neutral tint"),
+    # ReviveCard tones over the page surface: body text on the tinted card.
+    ("textPrimary", "urgentAction", 0.10, "surfacePrimary", AA_NORMAL,
+     "body text on critical card"),
+    ("textPrimary", "belowRangeWarning", 0.10, "surfacePrimary", AA_NORMAL,
+     "body text on caution card"),
+    ("textPrimary", "infoCalm", 0.10, "surfacePrimary", AA_NORMAL,
+     "body text on info card"),
+    ("textSecondary", "belowRangeWarning", 0.10, "surfacePrimary", AA_NORMAL,
+     "secondary text on caution card"),
+    ("textSecondary", "infoCalm", 0.10, "surfacePrimary", AA_NORMAL,
+     "secondary text on info card"),
+    # ReviveStateView: accent icon/heading on its tinted card.
+    ("belowRangeWarning", "belowRangeWarning", 0.10, "surfacePrimary",
+     AA_LARGE, "degraded-state icon on its own tint"),
+    ("urgentAction", "urgentAction", 0.10, "surfacePrimary", AA_LARGE,
+     "blocking-state icon on its own tint"),
+    # Dialog emphasis block: the line that must not be missed.
+    ("textPrimary", "urgentAction", 0.14, "surfaceRaised", AA_NORMAL,
+     "dialog emphasis text on urgent tint"),
+]
+
+
+def composite(overlay_hex: str, alpha: float, base_hex: str) -> str:
+    """Flatten `overlay` at `alpha` over `base`, returning a solid hex."""
+    out = []
+    for i in (0, 2, 4):
+        o = int(overlay_hex[i:i + 2], 16)
+        b = int(base_hex[i:i + 2], 16)
+        out.append(round(o * alpha + b * (1 - alpha)))
+    return "".join(f"{c:02X}" for c in out)
+
+
 def _channel(v: float) -> float:
     v /= 255.0
     return v / 12.92 if v <= 0.03928 else ((v + 0.055) / 1.055) ** 2.4
@@ -107,6 +159,17 @@ def audit(name: str, tokens: dict) -> int:
             failures += 1
         mark = "PASS" if ok else "FAIL"
         print(f"{fg:<22}{bg:<20}{ratio:>7.2f}:1  {minimum:>5.1f}  {mark}   {desc}")
+
+    print(f"\n  -- alpha-composited backgrounds --")
+    for fg, overlay, alpha, base, minimum, desc in COMPOSITE_PAIRINGS:
+        effective = composite(tokens[overlay], alpha, tokens[base])
+        ratio = contrast(tokens[fg], effective)
+        ok = ratio >= minimum
+        if not ok:
+            failures += 1
+        mark = "PASS" if ok else "FAIL"
+        label = f"{overlay}@{alpha:g}/{base}"
+        print(f"{fg:<22}{label:<20}{ratio:>7.2f}:1  {minimum:>5.1f}  {mark}   {desc}")
     return failures
 
 

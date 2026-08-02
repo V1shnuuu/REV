@@ -190,6 +190,7 @@ class _TriageScreenState extends State<TriageScreen> {
           Semantics(
             label: 'Go back',
             button: true,
+            onTap: () => Navigator.pop(context),
             excludeSemantics: true,
             child: GestureDetector(
               onTap: () => Navigator.pop(context),
@@ -289,6 +290,7 @@ class _TriageScreenState extends State<TriageScreen> {
       label: _isListening
           ? 'Stop listening'
           : 'Describe the situation out loud',
+      onTap: _toggleListening,
       excludeSemantics: true,
       child: GestureDetector(
         onTap: _toggleListening,
