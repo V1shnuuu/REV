@@ -41,7 +41,13 @@ class _LiveCprScreenState extends State<LiveCprScreen>
   StreamSubscription<BpmReading>? _bpmSubscription;
   Timer? _elapsedTimer;
   Timer? _availabilityTimer;
-  int _elapsedSeconds = 0;
+
+  /// Elapsed time is a ValueNotifier rather than plain state because it ticks
+  /// once a second for the whole session. Driving it through setState rebuilt
+  /// the entire screen - gauge, chest-animation CustomPainter, voice indicator
+  /// - every second, to change two digits in the header. Only the timer text
+  /// listens now.
+  final ValueNotifier<int> _elapsedSeconds = ValueNotifier<int>(0);
   int _fallbackTipIndex = 0;
   BpmStatus _lastHapticStatus = BpmStatus.waiting;
 
@@ -81,6 +87,7 @@ class _LiveCprScreenState extends State<LiveCprScreen>
     _bpmSubscription?.cancel();
     _elapsedTimer?.cancel();
     _availabilityTimer?.cancel();
+    _elapsedSeconds.dispose();
     _stt.stopListening();
     _tts.setOnComplete(null);
     _tts.stop();
@@ -111,7 +118,7 @@ class _LiveCprScreenState extends State<LiveCprScreen>
       _isActive = true;
       _showBreathPrompt = false;
       _lastBreathPromptAt = 0;
-      _elapsedSeconds = 0;
+      _elapsedSeconds.value = 0;
       _lastHapticStatus = BpmStatus.waiting;
     });
 
@@ -172,7 +179,8 @@ class _LiveCprScreenState extends State<LiveCprScreen>
     });
 
     _elapsedTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (mounted) setState(() => _elapsedSeconds++);
+      // No setState: only the header's timer text listens to this.
+      if (mounted) _elapsedSeconds.value++;
     });
 
     _tts.speak(
@@ -187,7 +195,7 @@ class _LiveCprScreenState extends State<LiveCprScreen>
 
   void _stopSession() {
     final int finalCompressionCount = _motion.compressionCount;
-    final Duration finalDuration = Duration(seconds: _elapsedSeconds);
+    final Duration finalDuration = Duration(seconds: _elapsedSeconds.value);
 
     _audio.stopMetronome();
     _motion.stopListening();
@@ -334,9 +342,9 @@ class _LiveCprScreenState extends State<LiveCprScreen>
   // Presentation
   // ---------------------------------------------------------------------------
 
-  String get _elapsedFormatted {
-    final m = (_elapsedSeconds ~/ 60).toString().padLeft(2, '0');
-    final s = (_elapsedSeconds % 60).toString().padLeft(2, '0');
+  String _formatElapsed(int seconds) {
+    final m = (seconds ~/ 60).toString().padLeft(2, '0');
+    final s = (seconds % 60).toString().padLeft(2, '0');
     return '$m:$s';
   }
 
@@ -644,17 +652,24 @@ class _LiveCprScreenState extends State<LiveCprScreen>
           AppSpacing.hGapSm,
           SizedBox(
             width: 56,
+            // The only widget that rebuilds on the one-second tick.
             child: _isActive
-                ? Semantics(
-                    label: 'Elapsed time $_elapsedFormatted',
-                    excludeSemantics: true,
-                    child: Text(
-                      _elapsedFormatted,
-                      textAlign: TextAlign.end,
-                      style: context.text.titleMedium?.copyWith(
-                        color: c.textSecondary,
-                      ),
-                    ),
+                ? ValueListenableBuilder<int>(
+                    valueListenable: _elapsedSeconds,
+                    builder: (context, seconds, _) {
+                      final formatted = _formatElapsed(seconds);
+                      return Semantics(
+                        label: 'Elapsed time $formatted',
+                        excludeSemantics: true,
+                        child: Text(
+                          formatted,
+                          textAlign: TextAlign.end,
+                          style: context.text.titleMedium?.copyWith(
+                            color: c.textSecondary,
+                          ),
+                        ),
+                      );
+                    },
                   )
                 : const SizedBox.shrink(),
           ),

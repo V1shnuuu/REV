@@ -57,13 +57,40 @@ If the AI is unreachable at any point — tunnel down, no signal, Ollama not run
 
 ---
 
+## Design system
+
+Revive is built on a token-driven design system rather than ad-hoc styling —
+semantic colour tokens, a typographic scale, spacing, shape, motion and haptic
+vocabularies, all in `lib/theme/`, with no raw hex values anywhere else in the
+app. See **[DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)**.
+
+Two decisions worth calling out:
+
+- **Red is reserved for "stop and call for help."** Out-of-range compression
+  rate is a normal, transient state during correct CPR, so rhythm feedback uses
+  amber. Using alarm-red for it would risk alarm fatigue on the one signal that
+  must never be ignored.
+- **Never colour alone.** Every state carries colour *and* icon *and* text
+  *and* motion, so any single channel conveys the instruction on its own.
+
 ## Testing
 
-`test/motion_service_test.dart` covers the safety-critical logic directly — compression debounce, rolling-window BPM calculation, and BPM threshold classification (too slow / good / too fast) — run against the same code path the real accelerometer stream uses, no device required:
+The system is enforced by tooling, not convention:
+
+| Check | Coverage |
+|---|---|
+| Compression logic | debounce, BPM calculation, threshold classification |
+| Layout | 4 device sizes × 3 text scales × 2 brightnesses, plus notch/cutout insets |
+| Accessibility | semantic labels, screen-reader activation, reduce-motion, touch targets |
+| Rebuild scope | the BPM gauge must not rebuild on timer ticks |
+| Contrast | 66 WCAG AA pairings, both themes, including alpha-composited backgrounds |
 
 ```bash
-flutter test
+flutter analyze --no-fatal-infos && flutter test && python tool/contrast_check.py
 ```
+
+Device-dependent verification that automation cannot cover is tracked in
+**[QA_CHECKLIST.md](QA_CHECKLIST.md)**, along with the current known gaps.
 
 ---
 
