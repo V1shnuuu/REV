@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
+import '../constants/emergency_protocols.dart';
 import '../services/ollama_service.dart';
 import '../services/stt_service.dart';
 import '../services/tts_service.dart';
-import '../constants/emergency_protocols.dart';
+import '../theme/app_theme.dart';
+import '../widgets/components/revive_button.dart';
+import '../widgets/components/revive_card.dart';
+import '../widgets/components/revive_state_view.dart';
+import '../widgets/components/voice_activity_indicator.dart';
 
 /// Optional AI triage gate shown before Live CPR Mode. This is the one place
 /// in the app where the LLM does something a keyword match can't: telling
@@ -26,6 +31,7 @@ class _TriageScreenState extends State<TriageScreen> {
 
   bool _isListening = false;
   bool _isThinking = false;
+  bool _micDenied = false;
   String? _recognizedText;
   EmergencyProtocol? _activeProtocol;
 
@@ -61,8 +67,15 @@ class _TriageScreenState extends State<TriageScreen> {
       return;
     }
 
+    final ready = await _stt.initialize();
+    if (!ready) {
+      if (mounted) setState(() => _micDenied = true);
+      return;
+    }
+
     setState(() {
       _isListening = true;
+      _micDenied = false;
       _recognizedText = null;
       _activeProtocol = null;
     });
@@ -116,27 +129,49 @@ class _TriageScreenState extends State<TriageScreen> {
     _tts.speak(protocol.voiceIntro);
   }
 
+  // ---------------------------------------------------------------------------
+  // Presentation
+  // ---------------------------------------------------------------------------
+
+  VoiceActivityState get _voiceState {
+    if (_isThinking) return VoiceActivityState.thinking;
+    if (_isListening) return VoiceActivityState.listening;
+    return VoiceActivityState.idle;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
+
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0F),
+      backgroundColor: c.surfacePrimary,
       body: SafeArea(
         child: Column(
           children: [
             _buildHeader(),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 16,
-                ),
+                padding: AppSpacing.pagePadding,
                 child: _activeProtocol == null
                     ? _buildAskState()
                     : _buildProtocolState(_activeProtocol!),
               ),
             ),
-            _buildSkipButton(),
-            const SizedBox(height: 16),
+            Padding(
+              padding: AppSpacing.pagePadding,
+              // Always present, never gated on AI or network. This is the
+              // escape hatch to the life-saving path.
+              child: ReviveButton(
+                label: 'SKIP — START CPR NOW',
+                icon: Icons.arrow_forward,
+                size: ReviveButtonSize.critical,
+                variant: _activeProtocol == null
+                    ? ReviveButtonVariant.primary
+                    : ReviveButtonVariant.secondary,
+                onPressed: _goToCpr,
+              ),
+            ),
+            AppSpacing.gapLg,
           ],
         ),
       ),
@@ -144,194 +179,198 @@ class _TriageScreenState extends State<TriageScreen> {
   }
 
   Widget _buildHeader() {
+    final c = context.colors;
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.sm,
+      ),
       child: Row(
         children: [
-          GestureDetector(
-            onTap: () => Navigator.pop(context),
-            child: Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(12),
+          Semantics(
+            label: 'Go back',
+            button: true,
+            excludeSemantics: true,
+            child: GestureDetector(
+              onTap: () => Navigator.pop(context),
+              child: Container(
+                width: AppTouchTarget.minimum,
+                height: AppTouchTarget.minimum,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: c.surfaceRaised,
+                  borderRadius: AppRadius.borderSm,
+                ),
+                child: Icon(Icons.close, color: c.textSecondary, size: 20),
               ),
-              child: const Icon(Icons.close, color: Colors.white70, size: 18),
             ),
           ),
-          const Spacer(),
-          Text(
-            'QUICK CHECK',
-            style: GoogleFonts.inter(
-              color: Colors.white54,
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 2,
+          Expanded(
+            child: Text(
+              'QUICK CHECK',
+              textAlign: TextAlign.center,
+              style: context.text.labelMedium?.copyWith(color: c.textTertiary),
             ),
           ),
-          const Spacer(),
-          const SizedBox(width: 38),
+          const SizedBox(width: AppTouchTarget.minimum),
         ],
       ),
     );
   }
 
   Widget _buildAskState() {
+    final c = context.colors;
+
     return Column(
       children: [
-        const SizedBox(height: 24),
+        AppSpacing.gapXl,
         Icon(
-          Icons.record_voice_over,
-          color: const Color(0xFFE63946).withValues(alpha: 0.4),
+          Icons.record_voice_over_outlined,
+          color: c.urgentAction.withValues(alpha: 0.45),
           size: 64,
         ),
-        const SizedBox(height: 20),
+        AppSpacing.gapLg,
         Text(
           "What's happening?",
           textAlign: TextAlign.center,
-          style: GoogleFonts.outfit(
-            color: Colors.white,
-            fontSize: 22,
-            fontWeight: FontWeight.w800,
-          ),
+          style: context.text.headlineMedium?.copyWith(color: c.textPrimary),
         ),
-        const SizedBox(height: 8),
+        AppSpacing.gapSm,
         Text(
-          "Optional — briefly describe the situation so guidance can adapt.\nOr just skip straight to CPR below.",
+          'Optional — describe the situation in a few words so guidance can '
+          'adapt. Or skip straight to CPR below.',
           textAlign: TextAlign.center,
-          style: GoogleFonts.inter(
-            color: Colors.white38,
-            fontSize: 13,
-            height: 1.5,
-          ),
+          style: context.text.bodyMedium?.copyWith(color: c.textSecondary),
         ),
-        const SizedBox(height: 28),
-        GestureDetector(
-          onTap: _toggleListening,
-          child: Container(
-            width: 84,
-            height: 84,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: _isListening
-                  ? const Color(0xFFE63946)
-                  : const Color(0xFF1A1A2E),
-              border: Border.all(
-                color: const Color(0xFFE63946).withValues(alpha: 0.5),
-                width: 2,
-              ),
-            ),
-            child: Icon(
-              _isListening ? Icons.mic : Icons.mic_none,
-              color: Colors.white,
-              size: 36,
-            ),
+        AppSpacing.gapXl,
+        if (_micDenied)
+          ReviveStateView.micPermissionDenied()
+        else ...[
+          _buildMicButton(),
+          AppSpacing.gapLg,
+          VoiceActivityIndicator(
+            state: _voiceState,
+            transcript: _recognizedText,
           ),
-        ),
-        const SizedBox(height: 16),
-        if (_isThinking)
-          Text(
-            'Checking protocol...',
-            style: GoogleFonts.inter(color: Colors.white54, fontSize: 13),
-          ),
-        if (_recognizedText != null && !_isThinking)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Text(
-              'YOU: "$_recognizedText"',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
-                color: Colors.white54,
-                fontSize: 13,
-                fontStyle: FontStyle.italic,
-              ),
+        ],
+        if (!_ollama.isAvailable) ...[
+          AppSpacing.gapLg,
+          ReviveCard(
+            tone: ReviveCardTone.caution,
+            compact: true,
+            child: Row(
+              children: [
+                Icon(Icons.cloud_off, color: c.belowRangeWarning, size: 18),
+                AppSpacing.hGapMd,
+                Expanded(
+                  child: Text(
+                    'AI triage is offline — describing the situation will just '
+                    'start standard CPR.',
+                    style: context.text.bodySmall?.copyWith(
+                      color: c.textSecondary,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-        if (!_ollama.isAvailable)
-          Padding(
-            padding: const EdgeInsets.only(top: 12),
-            child: Text(
-              'AI triage is offline right now — describing the situation will just start standard CPR.',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(color: Colors.white24, fontSize: 11),
-            ),
-          ),
+        ],
+        AppSpacing.gapLg,
       ],
     );
   }
 
+  Widget _buildMicButton() {
+    final c = context.colors;
+    final motion = ResolvedMotion.of(context);
+
+    return Semantics(
+      button: true,
+      label: _isListening
+          ? 'Stop listening'
+          : 'Describe the situation out loud',
+      excludeSemantics: true,
+      child: GestureDetector(
+        onTap: _toggleListening,
+        child: AnimatedContainer(
+          duration: motion.duration(AppMotion.fast),
+          width: 96,
+          height: 96,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: _isListening ? c.urgentAction : c.surfaceRaised,
+            border: Border.all(color: c.urgentAction, width: 2),
+            boxShadow: _isListening && motion.shouldAnimate
+                ? AppElevation.glow(c.urgentAction)
+                : AppElevation.none,
+          ),
+          child: Icon(
+            _isListening ? Icons.mic : Icons.mic_none,
+            color: _isListening ? c.onUrgentAction : c.urgentAction,
+            size: 40,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildProtocolState(EmergencyProtocol protocol) {
+    final c = context.colors;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: const Color(0xFF3498DB).withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: const Color(0xFF3498DB).withValues(alpha: 0.3),
-            ),
-          ),
+        AppSpacing.gapLg,
+        ReviveCard(
+          tone: ReviveCardTone.info,
           child: Row(
             children: [
-              const Icon(Icons.info_outline, color: Color(0xFF3498DB)),
-              const SizedBox(width: 12),
+              Icon(Icons.info_outline, color: c.infoCalm, size: 24),
+              AppSpacing.hGapMd,
               Expanded(
                 child: Text(
                   protocol.voiceIntro,
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+                  style: context.text.titleMedium?.copyWith(
+                    color: c.textPrimary,
                   ),
                 ),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 20),
+        AppSpacing.gapXl,
         Text(
           '${protocol.label.toUpperCase()} PROTOCOL',
-          style: GoogleFonts.inter(
-            color: const Color(0xFFE63946),
-            fontSize: 13,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 1.5,
-          ),
+          style: context.text.labelMedium?.copyWith(color: c.urgentAction),
         ),
-        const SizedBox(height: 12),
+        AppSpacing.gapMd,
         ...protocol.steps.asMap().entries.map(
           (entry) => Padding(
-            padding: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.only(bottom: AppSpacing.md),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  width: 24,
-                  height: 24,
+                  width: 26,
+                  height: 26,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.08),
+                    color: c.surfaceOverlay,
                     shape: BoxShape.circle,
                   ),
                   child: Text(
                     '${entry.key + 1}',
-                    style: GoogleFonts.inter(
-                      color: Colors.white70,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
+                    style: context.text.labelSmall?.copyWith(
+                      color: c.textSecondary,
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                AppSpacing.hGapMd,
                 Expanded(
                   child: Text(
                     entry.value,
-                    style: GoogleFonts.inter(
-                      color: Colors.white70,
-                      fontSize: 14,
-                      height: 1.4,
+                    style: context.text.bodyLarge?.copyWith(
+                      color: c.textSecondary,
                     ),
                   ),
                 ),
@@ -339,66 +378,13 @@ class _TriageScreenState extends State<TriageScreen> {
             ),
           ),
         ),
-        const SizedBox(height: 8),
-        SizedBox(
-          width: double.infinity,
-          height: 52,
-          child: ElevatedButton(
-            onPressed: _goToCpr,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFE63946),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              elevation: 0,
-            ),
-            child: Text(
-              'PERSON IS UNRESPONSIVE — START CPR',
-              style: GoogleFonts.inter(
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 1,
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSkipButton() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: SizedBox(
-        width: double.infinity,
-        height: 52,
-        child: OutlinedButton(
+        AppSpacing.gapSm,
+        ReviveButton(
+          label: 'PERSON IS UNRESPONSIVE — START CPR',
           onPressed: _goToCpr,
-          style: OutlinedButton.styleFrom(
-            side: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.arrow_forward, color: Colors.white70, size: 18),
-              const SizedBox(width: 8),
-              Text(
-                'SKIP — START CPR NOW',
-                style: GoogleFonts.inter(
-                  color: Colors.white70,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 1.5,
-                ),
-              ),
-            ],
-          ),
         ),
-      ),
+        AppSpacing.gapLg,
+      ],
     );
   }
 }

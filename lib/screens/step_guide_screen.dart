@@ -1,13 +1,16 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import '../constants/cpr_steps.dart';
-import '../services/tts_service.dart';
-import '../services/ollama_service.dart';
-import '../services/motion_service.dart';
-import '../widgets/cpr_instruction_animation.dart';
-import '../widgets/bpm_gauge.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
+
+import '../constants/cpr_steps.dart';
+import '../services/motion_service.dart';
+import '../services/ollama_service.dart';
+import '../services/tts_service.dart';
+import '../theme/app_theme.dart';
+import '../widgets/components/revive_bpm_gauge.dart';
+import '../widgets/components/revive_button.dart';
+import '../widgets/components/revive_card.dart';
+import '../widgets/components/revive_state_view.dart';
+import '../widgets/cpr_instruction_animation.dart';
 
 class StepGuideScreen extends StatefulWidget {
   const StepGuideScreen({super.key});
@@ -18,11 +21,6 @@ class StepGuideScreen extends StatefulWidget {
 
 class _StepGuideScreenState extends State<StepGuideScreen>
     with TickerProviderStateMixin, WidgetsBindingObserver {
-  static const Color primaryRed = Color(0xFFE63946);
-  static const Color bgColor = Color(0xFF0A0A0F);
-  static const Color cardColor = Color(0xFF1A1A2E);
-  static const Color successColor = Color(0xFF2ECC71);
-
   final PageController _pageController = PageController();
   final TtsService _tts = TtsService();
   final OllamaService _ollama = OllamaService();
@@ -30,6 +28,7 @@ class _StepGuideScreenState extends State<StepGuideScreen>
 
   int _currentStep = 0;
   String? _aiTip;
+  bool _loadingTip = false;
   final Map<int, String> _aiTipsCache = {};
 
   late AnimationController _iconPulseController;
@@ -41,7 +40,7 @@ class _StepGuideScreenState extends State<StepGuideScreen>
     _iconPulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1000),
-    )..repeat(reverse: true);
+    );
     _tts.initialize().then((_) => _speakCurrentStep());
     _loadAiTip(0);
     WakelockPlus.enable();
@@ -65,6 +64,16 @@ class _StepGuideScreenState extends State<StepGuideScreen>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+
+    // Decorative pulse: skipped outright under reduce-motion.
+    if (ResolvedMotion.of(context).shouldAnimate) {
+      if (!_iconPulseController.isAnimating) {
+        _iconPulseController.repeat(reverse: true);
+      }
+    } else {
+      _iconPulseController.stop();
+    }
+
     // Pre-cache images for faster load
     precacheImage(const AssetImage('assets/CPR_HAND PLACEMENT.png'), context);
     precacheImage(const AssetImage('assets/CPR_RESCUE_BREATH.PNG'), context);
@@ -97,20 +106,22 @@ class _StepGuideScreenState extends State<StepGuideScreen>
     }
   }
 
-  /// TODO(phase-3): this had a `_loadingTip` flag that was set but never read,
-  /// so the AI tip pops in with no indication it was ever being fetched. The
-  /// flag is removed here rather than left dead; reinstate a real pending
-  /// state using the Phase 2 loading component when this screen is restyled.
   Future<void> _loadAiTip(int stepIndex) async {
     if (_aiTipsCache.containsKey(stepIndex)) {
-      setState(() => _aiTip = _aiTipsCache[stepIndex]);
+      setState(() {
+        _aiTip = _aiTipsCache[stepIndex];
+        _loadingTip = false;
+      });
       return;
     }
 
     if (!_ollama.isAvailable) await _ollama.checkAvailability();
     if (!_ollama.isAvailable) return;
 
-    setState(() => _aiTip = null);
+    setState(() {
+      _loadingTip = true;
+      _aiTip = null;
+    });
     final tip = await _ollama.generateTip(
       cprSteps[stepIndex].title,
       cprSteps[stepIndex].instruction,
@@ -119,6 +130,7 @@ class _StepGuideScreenState extends State<StepGuideScreen>
     if (mounted) {
       setState(() {
         _aiTip = tip;
+        _loadingTip = false;
         if (tip != null) {
           _aiTipsCache[stepIndex] = tip;
         }
@@ -130,6 +142,7 @@ class _StepGuideScreenState extends State<StepGuideScreen>
     setState(() {
       _currentStep = index;
       _aiTip = null;
+      _loadingTip = false;
       _isSimulating = false;
       _motionService.stopListening();
       _motionService.reset();
@@ -140,17 +153,15 @@ class _StepGuideScreenState extends State<StepGuideScreen>
   }
 
   void _startSimulation() {
-    setState(() {
-      _isSimulating = true;
-    });
+    setState(() => _isSimulating = true);
     _motionService.startListening();
   }
 
   void _goToNextStep() {
     if (_currentStep < cprSteps.length - 1) {
       _pageController.nextPage(
-        duration: const Duration(milliseconds: 400),
-        curve: Curves.easeInOut,
+        duration: AppMotion.slow,
+        curve: AppMotion.standard,
       );
     } else {
       _tts.stop();
@@ -161,22 +172,28 @@ class _StepGuideScreenState extends State<StepGuideScreen>
   void _goToPreviousStep() {
     if (_currentStep > 0) {
       _pageController.previousPage(
-        duration: const Duration(milliseconds: 400),
-        curve: Curves.easeInOut,
+        duration: AppMotion.slow,
+        curve: AppMotion.standard,
       );
     }
   }
 
+  // ---------------------------------------------------------------------------
+  // Presentation
+  // ---------------------------------------------------------------------------
+
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
+
     return Scaffold(
-      backgroundColor: bgColor,
+      backgroundColor: c.surfacePrimary,
       body: SafeArea(
         child: Column(
           children: [
             _buildTopBar(),
             _buildProgressBar(),
-            const SizedBox(height: 16),
+            AppSpacing.gapLg,
             Expanded(
               child: PageView.builder(
                 controller: _pageController,
@@ -187,6 +204,7 @@ class _StepGuideScreenState extends State<StepGuideScreen>
               ),
             ),
             _buildNavButtons(),
+            AppSpacing.gapSm,
           ],
         ),
       ),
@@ -194,55 +212,55 @@ class _StepGuideScreenState extends State<StepGuideScreen>
   }
 
   Widget _buildTopBar() {
+    final c = context.colors;
+
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.sm,
+      ),
       child: Row(
         children: [
           Semantics(
-            label: 'Go Back',
+            label: 'Go back',
             button: true,
+            excludeSemantics: true,
             child: GestureDetector(
               onTap: () => Navigator.pop(context),
               child: Container(
-                padding: const EdgeInsets.all(10),
+                width: AppTouchTarget.minimum,
+                height: AppTouchTarget.minimum,
+                alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(12),
+                  color: c.surfaceRaised,
+                  borderRadius: AppRadius.borderSm,
                 ),
-                child: const Icon(
-                  Icons.arrow_back_ios_new,
-                  color: Colors.white70,
-                  size: 18,
-                ),
+                child: Icon(Icons.arrow_back, color: c.textSecondary, size: 20),
               ),
             ),
           ),
-          const Spacer(),
-          Semantics(
-            label: 'Step ${_currentStep + 1} of ${cprSteps.length}',
+          Expanded(
             child: Text(
               'STEP ${_currentStep + 1} OF ${cprSteps.length}',
-              style: GoogleFonts.inter(
-                color: Colors.white.withValues(alpha: 0.5),
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 2,
-              ),
+              textAlign: TextAlign.center,
+              style: context.text.labelMedium?.copyWith(color: c.textTertiary),
             ),
           ),
-          const Spacer(),
           Semantics(
-            label: 'Repeat Voice Instruction',
+            label: 'Repeat voice instruction',
             button: true,
+            excludeSemantics: true,
             child: GestureDetector(
               onTap: _speakCurrentStep,
               child: Container(
-                padding: const EdgeInsets.all(10),
+                width: AppTouchTarget.minimum,
+                height: AppTouchTarget.minimum,
+                alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: primaryRed.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(12),
+                  color: c.urgentActionSubtle,
+                  borderRadius: AppRadius.borderSm,
                 ),
-                child: const Icon(Icons.volume_up, color: primaryRed, size: 18),
+                child: Icon(Icons.volume_up, color: c.urgentAction, size: 20),
               ),
             ),
           ),
@@ -252,22 +270,22 @@ class _StepGuideScreenState extends State<StepGuideScreen>
   }
 
   Widget _buildProgressBar() {
+    final c = context.colors;
     return Semantics(
-      hidden: true, // Decorative element
+      label: 'Progress: step ${_currentStep + 1} of ${cprSteps.length}',
+      excludeSemantics: true,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: AppSpacing.pagePadding,
         child: Row(
           children: List.generate(
             cprSteps.length,
             (i) => Expanded(
               child: Container(
                 height: 4,
-                margin: const EdgeInsets.symmetric(horizontal: 2),
+                margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(2),
-                  color: i <= _currentStep
-                      ? primaryRed
-                      : Colors.white.withValues(alpha: 0.1),
+                  borderRadius: AppRadius.borderXs,
+                  color: i <= _currentStep ? c.urgentAction : c.surfaceOverlay,
                 ),
               ),
             ),
@@ -279,75 +297,29 @@ class _StepGuideScreenState extends State<StepGuideScreen>
 
   Widget _buildNavButtons() {
     final bool isLastStep = _currentStep == cprSteps.length - 1;
+
     return Padding(
-      padding: const EdgeInsets.all(12),
+      padding: AppSpacing.pagePadding,
       child: Row(
         children: [
           if (_currentStep > 0) ...[
             Expanded(
-              child: SizedBox(
-                height: 48,
-                child: OutlinedButton(
-                  onPressed: _goToPreviousStep,
-                  style: OutlinedButton.styleFrom(
-                    side: BorderSide(
-                      color: Colors.white.withValues(alpha: 0.2),
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                  child: Text(
-                    'BACK',
-                    style: GoogleFonts.inter(
-                      color: Colors.white70,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 1.5,
-                    ),
-                  ),
-                ),
+              child: ReviveButton(
+                label: 'BACK',
+                variant: ReviveButtonVariant.secondary,
+                onPressed: _goToPreviousStep,
               ),
             ),
-            const SizedBox(width: 12),
+            AppSpacing.hGapMd,
           ],
           Expanded(
             flex: 2,
-            child: SizedBox(
-              height: 48,
-              child: ElevatedButton(
-                onPressed: _goToNextStep,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryRed,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Flexible(
-                      child: Text(
-                        isLastStep ? 'ENTER LIVE MODE' : 'NEXT STEP',
-                        style: GoogleFonts.inter(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 1.5,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Icon(
-                      isLastStep
-                          ? Icons.warning_amber_rounded
-                          : Icons.arrow_forward,
-                      size: 20,
-                    ),
-                  ],
-                ),
-              ),
+            child: ReviveButton(
+              label: isLastStep ? 'ENTER LIVE MODE' : 'NEXT STEP',
+              icon: isLastStep
+                  ? Icons.warning_amber_rounded
+                  : Icons.arrow_forward,
+              onPressed: _goToNextStep,
             ),
           ),
         ],
@@ -356,275 +328,216 @@ class _StepGuideScreenState extends State<StepGuideScreen>
   }
 
   Widget _buildStepPage(CprStep step) {
+    final c = context.colors;
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final double maxHeight = constraints.maxHeight;
-        final bool isSmallScreen = maxHeight < 600;
+        final bool isSmall = maxHeight < 600;
 
         return SingleChildScrollView(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(minHeight: maxHeight),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(height: isSmallScreen ? 8 : 16),
-                  AnimatedBuilder(
-                    animation: _iconPulseController,
-                    builder: (context, child) {
-                      return Container(
-                        width: isSmallScreen ? 60 : 80,
-                        height: isSmallScreen ? 60 : 80,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: primaryRed.withValues(alpha: 0.12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: primaryRed.withValues(
-                                alpha: 0.1 + _iconPulseController.value * 0.15,
-                              ),
-                              blurRadius: isSmallScreen ? 20 : 30,
-                              spreadRadius: 5,
-                            ),
-                          ],
-                        ),
-                        child: Icon(
-                          step.icon,
-                          color: primaryRed,
-                          size: isSmallScreen ? 30 : 36,
-                        ),
-                      );
-                    },
-                  ),
-                  SizedBox(height: isSmallScreen ? 12 : 20),
-                  Text(
-                    'STEP ${step.stepNumber}',
-                    style: GoogleFonts.outfit(
-                      color: primaryRed,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 3,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Semantics(
-                    header: true,
-                    child: Text(
-                      step.title,
-                      style: GoogleFonts.outfit(
-                        color: Colors.white,
-                        fontSize: isSmallScreen ? 20 : 24,
-                        fontWeight: FontWeight.w800,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  SizedBox(height: isSmallScreen ? 8 : 12),
-                  Container(
-                    width: double.infinity,
-                    padding: EdgeInsets.all(isSmallScreen ? 12 : 16),
-                    decoration: BoxDecoration(
-                      color: cardColor,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.06),
-                      ),
-                    ),
-                    child: Text(
-                      step.instruction,
-                      style: GoogleFonts.inter(
-                        color: Colors.white.withValues(alpha: 0.85),
-                        fontSize: isSmallScreen ? 14 : 16,
-                        fontWeight: FontWeight.w500,
-                        height: 1.4,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  if (step.visualType == StepVisualType.chinPosition) ...[
-                    Semantics(
-                      label: 'Image showing correct chin and head position',
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            maxHeight: maxHeight * 0.3,
-                          ),
-                          child: Image.asset(
-                            'assets/CHIN_POSITION.jpeg',
-                            fit: BoxFit.contain,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                  if (step.visualType == StepVisualType.handPlacement) ...[
-                    Semantics(
-                      label: 'Image showing correct hand placement for CPR',
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            maxHeight: maxHeight * 0.3,
-                          ),
-                          child: Image.asset(
-                            'assets/CPR_HAND PLACEMENT.png',
-                            fit: BoxFit.contain,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                  if (step.visualType ==
-                      StepVisualType.compressionPractice) ...[
-                    if (!_isSimulating) ...[
-                      SizedBox(
-                        height: 200,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(
-                              Icons.touch_app,
-                              color: Colors.white24,
-                              size: 40,
-                            ),
-                            const SizedBox(height: 16),
-                            ElevatedButton(
-                              onPressed: _startSimulation,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: primaryRed.withValues(
-                                  alpha: 0.2,
-                                ),
-                                foregroundColor: primaryRed,
-                                side: const BorderSide(color: primaryRed),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 32,
-                                  vertical: 16,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              child: Text(
-                                'START INTERACTIVE PRACTICE',
-                                style: GoogleFonts.inter(
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 1,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Place phone on chest or tap screen to practice',
-                              style: GoogleFonts.inter(
-                                color: Colors.white54,
-                                fontSize: 12,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ] else ...[
-                      GestureDetector(
-                        onTap: () => _motionService.simulateCompression(),
-                        child: const CprInstructionAnimation(
-                          initialStep: InstructionStep.compression,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      StreamBuilder<BpmReading>(
-                        stream: _motionService.bpmStream,
-                        initialData: BpmReading.initial,
-                        builder: (context, snapshot) {
-                          return BpmGauge(
-                            reading: snapshot.data ?? BpmReading.initial,
-                          );
-                        },
-                      ),
-                    ],
-                  ],
-                  if (step.visualType == StepVisualType.rescueBreath) ...[
-                    Semantics(
-                      label:
-                          'Image showing head tilt and chin lift for rescue breaths',
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            maxHeight: maxHeight * 0.3,
-                          ),
-                          child: Image.asset(
-                            'assets/CPR_RESCUE_BREATH.PNG',
-                            fit: BoxFit.contain,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: 16),
-                  if (step.detail != null) ...[
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.04),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Text(
-                        step.detail!,
-                        style: GoogleFonts.inter(
-                          color: Colors.white.withValues(alpha: 0.5),
-                          fontSize: 12,
-                          height: 1.4,
-                        ),
-                      ),
-                    ),
-                  ],
-                  if (_aiTip != null) ...[
-                    const SizedBox(height: 12),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: successColor.withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: successColor.withValues(alpha: 0.2),
-                        ),
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Icon(
-                            Icons.auto_awesome,
-                            color: successColor,
-                            size: 14,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              _aiTip!,
-                              style: GoogleFonts.inter(
-                                color: Colors.white.withValues(alpha: 0.7),
-                                fontSize: 11,
-                                height: 1.3,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                  SizedBox(height: isSmallScreen ? 8 : 16),
-                ],
+          padding: AppSpacing.pagePadding,
+          child: Column(
+            children: [
+              AppSpacing.gapMd,
+              _buildStepIcon(step, isSmall),
+              AppSpacing.gapLg,
+              Text(
+                'STEP ${step.stepNumber}',
+                style: context.text.labelSmall?.copyWith(color: c.urgentAction),
               ),
-            ),
+              AppSpacing.gapXs,
+              Semantics(
+                header: true,
+                child: Text(
+                  step.title,
+                  textAlign: TextAlign.center,
+                  style:
+                      (isSmall
+                              ? context.text.headlineSmall
+                              : context.text.headlineMedium)
+                          ?.copyWith(color: c.textPrimary),
+                ),
+              ),
+              AppSpacing.gapMd,
+              ReviveCard(
+                child: Text(
+                  step.instruction,
+                  textAlign: TextAlign.center,
+                  style: context.text.bodyLarge?.copyWith(color: c.textPrimary),
+                ),
+              ),
+              AppSpacing.gapLg,
+              _buildStepVisual(step, maxHeight),
+              if (step.detail != null) ...[
+                AppSpacing.gapLg,
+                ReviveCard(
+                  compact: true,
+                  child: Text(
+                    step.detail!,
+                    style: context.text.bodySmall?.copyWith(
+                      color: c.textSecondary,
+                    ),
+                  ),
+                ),
+              ],
+              _buildAiTip(),
+              AppSpacing.gapLg,
+            ],
           ),
         );
       },
+    );
+  }
+
+  Widget _buildStepIcon(CprStep step, bool isSmall) {
+    final c = context.colors;
+    final double size = isSmall ? 64 : 84;
+
+    return AnimatedBuilder(
+      animation: _iconPulseController,
+      builder: (context, child) => Container(
+        width: size,
+        height: size,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: c.urgentActionSubtle,
+          boxShadow: AppElevation.glow(
+            c.urgentAction,
+            intensity: 0.4 + _iconPulseController.value * 0.5,
+          ),
+        ),
+        child: Icon(step.icon, color: c.urgentAction, size: isSmall ? 30 : 38),
+      ),
+    );
+  }
+
+  Widget _buildStepVisual(CprStep step, double maxHeight) {
+    switch (step.visualType) {
+      case StepVisualType.chinPosition:
+        return _buildImage(
+          'assets/CHIN_POSITION.jpeg',
+          'Correct chin and head position to open the airway',
+          maxHeight,
+        );
+      case StepVisualType.handPlacement:
+        return _buildImage(
+          'assets/CPR_HAND PLACEMENT.png',
+          'Correct hand placement for chest compressions',
+          maxHeight,
+        );
+      case StepVisualType.rescueBreath:
+        return _buildImage(
+          'assets/CPR_RESCUE_BREATH.PNG',
+          'Head tilt and chin lift for rescue breaths',
+          maxHeight,
+        );
+      case StepVisualType.compressionPractice:
+        return _buildCompressionPractice();
+      case StepVisualType.none:
+        return const SizedBox.shrink();
+    }
+  }
+
+  Widget _buildImage(String asset, String semanticLabel, double maxHeight) {
+    return Semantics(
+      label: semanticLabel,
+      image: true,
+      excludeSemantics: true,
+      child: ClipRRect(
+        borderRadius: AppRadius.borderLg,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxHeight: maxHeight * 0.32),
+          child: Image.asset(asset, fit: BoxFit.contain),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCompressionPractice() {
+    final c = context.colors;
+
+    if (!_isSimulating) {
+      return Column(
+        children: [
+          Icon(Icons.touch_app_outlined, color: c.textTertiary, size: 40),
+          AppSpacing.gapMd,
+          ReviveButton(
+            label: 'START INTERACTIVE PRACTICE',
+            variant: ReviveButtonVariant.secondary,
+            onPressed: _startSimulation,
+          ),
+          AppSpacing.gapSm,
+          Text(
+            'Place the phone on the chest, or tap the screen to practise',
+            textAlign: TextAlign.center,
+            style: context.text.bodySmall?.copyWith(color: c.textTertiary),
+          ),
+        ],
+      );
+    }
+
+    return Column(
+      children: [
+        Semantics(
+          label: 'Tap to register a practice compression',
+          button: true,
+          excludeSemantics: true,
+          child: GestureDetector(
+            onTap: _motionService.simulateCompression,
+            child: const CprInstructionAnimation(
+              initialStep: InstructionStep.compression,
+            ),
+          ),
+        ),
+        AppSpacing.gapLg,
+        StreamBuilder<BpmReading>(
+          stream: _motionService.bpmStream,
+          initialData: BpmReading.initial,
+          builder: (context, snapshot) => ReviveBpmGauge(
+            reading: snapshot.data ?? BpmReading.initial,
+            compact: true,
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Reinstates the pending state the old screen never had: _loadingTip was
+  /// previously set but never read, so the AI tip popped in with no indication
+  /// it had ever been fetching.
+  Widget _buildAiTip() {
+    if (!_loadingTip && _aiTip == null) return const SizedBox.shrink();
+
+    final c = context.colors;
+
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSpacing.md),
+      child: _loadingTip
+          ? const Align(
+              alignment: Alignment.centerLeft,
+              child: ReviveLoadingView(size: 18, message: 'Fetching a tip...'),
+            )
+          : ReviveCard(
+              tone: ReviveCardTone.success,
+              compact: true,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.auto_awesome, color: c.inRangeSuccess, size: 16),
+                  AppSpacing.hGapSm,
+                  Expanded(
+                    child: Text(
+                      _aiTip!,
+                      style: context.text.bodySmall?.copyWith(
+                        color: c.textSecondary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
     );
   }
 }

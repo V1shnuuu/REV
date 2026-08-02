@@ -26,16 +26,40 @@ class MyHttpOverrides extends HttpOverrides {
 void main() {
   HttpOverrides.global = MyHttpOverrides();
   WidgetsFlutterBinding.ensureInitialized();
+  // Locked to portrait: compression detection reads the accelerometer's Z
+  // axis, which assumes the phone stays flat/upright against the chest. A
+  // landscape rotation would remap the axis and break counting.
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.light,
-      systemNavigationBarColor: Color(0xFF0A0A0F),
-      systemNavigationBarIconBrightness: Brightness.light,
-    ),
-  );
   runApp(const ReviveApp());
+}
+
+/// Keeps the status and navigation bars in step with the active theme.
+///
+/// The overlay style used to be set once in main() with a hardcoded dark
+/// navigation bar. Now that the app follows the system light/dark setting,
+/// that would paint a black navigation bar under a light UI, so it is resolved
+/// from the theme instead.
+class _SystemUiWrapper extends StatelessWidget {
+  final Widget child;
+
+  const _SystemUiWrapper({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final iconBrightness = isDark ? Brightness.light : Brightness.dark;
+
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: iconBrightness,
+        statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
+        systemNavigationBarColor: context.colors.surfacePrimary,
+        systemNavigationBarIconBrightness: iconBrightness,
+      ),
+      child: child,
+    );
+  }
 }
 
 class ReviveApp extends StatelessWidget {
@@ -48,11 +72,14 @@ class ReviveApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
-      // Pinned to dark until Phase 3 migrates the screens onto semantic
-      // tokens. The screens still carry hardcoded dark-surface colors, so
-      // following the system setting today would render dark-on-light.
-      // Flip to ThemeMode.system once the screen migration lands.
-      themeMode: ThemeMode.dark,
+      // Every screen now resolves colour through the ReviveColors extension,
+      // so both brightnesses render correctly and the app can follow the
+      // system setting.
+      themeMode: ThemeMode.system,
+      // Wraps every route, so the system bars track the active brightness on
+      // whichever screen is showing.
+      builder: (context, child) =>
+          _SystemUiWrapper(child: child ?? const SizedBox.shrink()),
       initialRoute: '/',
       routes: {
         '/': (context) => const HomeScreen(),
