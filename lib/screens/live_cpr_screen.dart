@@ -43,6 +43,7 @@ class _LiveCprScreenState extends State<LiveCprScreen>
   Timer? _availabilityTimer;
   int _elapsedSeconds = 0;
   int _fallbackTipIndex = 0;
+  BpmStatus _lastHapticStatus = BpmStatus.waiting;
 
   // Voice assistant state
   bool _isListening = false;
@@ -111,6 +112,7 @@ class _LiveCprScreenState extends State<LiveCprScreen>
       _showBreathPrompt = false;
       _lastBreathPromptAt = 0;
       _elapsedSeconds = 0;
+      _lastHapticStatus = BpmStatus.waiting;
     });
 
     _audio.startMetronome();
@@ -150,6 +152,15 @@ class _LiveCprScreenState extends State<LiveCprScreen>
   void _setupBpmSubscription() {
     _bpmSubscription = _motion.bpmStream.listen((reading) {
       if (mounted) {
+        // Distinct haptic when the rate crosses into or out of the target
+        // band, so the rescuer feels the correction with the phone against
+        // the chest and their eyes on the patient rather than the screen.
+        if (reading.status != _lastHapticStatus &&
+            reading.status != BpmStatus.waiting) {
+          _lastHapticStatus = reading.status;
+          AppHaptics.rangeTransition();
+        }
+
         // Only update local state if we need to trigger heavy logic like breath prompts
         if (reading.compressionCount > 0 &&
             reading.compressionCount % 30 == 0 &&
@@ -227,6 +238,9 @@ class _LiveCprScreenState extends State<LiveCprScreen>
 
   void _promptRescueBreaths() {
     setState(() => _showBreathPrompt = true);
+    // Heavier cue: this interrupts the compression rhythm, so it has to be
+    // felt through the ongoing beat.
+    AppHaptics.prompt();
     _tts.speak('Give 2 rescue breaths now. Then continue compressions.');
     Future.delayed(const Duration(seconds: 5), () {
       if (mounted) setState(() => _showBreathPrompt = false);

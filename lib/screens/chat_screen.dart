@@ -225,45 +225,51 @@ class _ChatScreenState extends State<ChatScreen>
           ],
         ),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.lg,
-                vertical: AppSpacing.md,
-              ),
-              itemCount: _messages.length + (_isLoading ? 1 : 0),
-              itemBuilder: (context, index) {
-                if (index == _messages.length && _isLoading) {
-                  return const Padding(
-                    padding: EdgeInsets.symmetric(vertical: AppSpacing.lg),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: ReviveLoadingView(size: 20),
-                    ),
-                  );
-                }
-                return _buildMessageBubble(_messages[index]);
-              },
-            ),
-          ),
-          if (_micDenied)
-            Padding(
-              padding: AppSpacing.pagePadding,
-              child: ReviveStateView.micPermissionDenied(),
-            )
-          else if (_isListening)
-            Padding(
-              padding: AppSpacing.pagePadding,
-              child: const VoiceActivityIndicator(
-                state: VoiceActivityState.listening,
+      // top: false because the AppBar already clears the status bar / notch.
+      // The bottom inset is handled here rather than by hand in the input bar,
+      // so it cannot double-count against the keyboard inset.
+      body: SafeArea(
+        top: false,
+        child: Column(
+          children: [
+            Expanded(
+              child: ListView.builder(
+                controller: _scrollController,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.lg,
+                  vertical: AppSpacing.md,
+                ),
+                itemCount: _messages.length + (_isLoading ? 1 : 0),
+                itemBuilder: (context, index) {
+                  if (index == _messages.length && _isLoading) {
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(vertical: AppSpacing.lg),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: ReviveLoadingView(size: 20),
+                      ),
+                    );
+                  }
+                  return _buildMessageBubble(_messages[index]);
+                },
               ),
             ),
-          if (_messages.length <= 1 && _ollamaAvailable) _buildSuggestions(),
-          _buildInputBar(),
-        ],
+            if (_micDenied)
+              Padding(
+                padding: AppSpacing.pagePadding,
+                child: ReviveStateView.micPermissionDenied(),
+              )
+            else if (_isListening)
+              Padding(
+                padding: AppSpacing.pagePadding,
+                child: const VoiceActivityIndicator(
+                  state: VoiceActivityState.listening,
+                ),
+              ),
+            if (_messages.length <= 1 && _ollamaAvailable) _buildSuggestions(),
+            _buildInputBar(),
+          ],
+        ),
       ),
     );
   }
@@ -367,11 +373,13 @@ class _ChatScreenState extends State<ChatScreen>
     final c = context.colors;
 
     return Container(
-      padding: EdgeInsets.only(
+      // Bottom inset is now supplied by the SafeArea around the body, so this
+      // only needs its own breathing room.
+      padding: const EdgeInsets.only(
         left: AppSpacing.lg,
         right: AppSpacing.sm,
         top: AppSpacing.md,
-        bottom: MediaQuery.of(context).padding.bottom + AppSpacing.md,
+        bottom: AppSpacing.md,
       ),
       decoration: BoxDecoration(
         color: c.surfaceSunken,

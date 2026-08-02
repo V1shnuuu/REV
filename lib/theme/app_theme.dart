@@ -1,3 +1,6 @@
+// CupertinoPageTransitionsBuilder lives in cupertino/route.dart on this SDK,
+// not in material's page_transitions_theme.dart, so it needs its own import.
+import 'package:flutter/cupertino.dart' show CupertinoPageTransitionsBuilder;
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
 import 'app_shape.dart';
@@ -5,6 +8,7 @@ import 'app_spacing.dart';
 import 'app_typography.dart';
 
 export 'app_colors.dart';
+export 'app_haptics.dart';
 export 'app_motion.dart';
 export 'app_shape.dart';
 export 'app_spacing.dart';
@@ -45,6 +49,17 @@ class AppTheme {
         onError: c.onUrgentAction,
         surface: c.surfaceRaised,
         onSurface: c.textPrimary,
+      ),
+      // Platform-appropriate navigation feel: an iOS-style horizontal slide
+      // with edge-swipe-back on Apple platforms, Material's own transition on
+      // Android. The custom palette is unaffected either way — only the motion
+      // of the push/pop changes.
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: <TargetPlatform, PageTransitionsBuilder>{
+          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.android: FadeForwardsPageTransitionsBuilder(),
+        },
       ),
       appBarTheme: AppBarTheme(
         backgroundColor: c.surfacePrimary,

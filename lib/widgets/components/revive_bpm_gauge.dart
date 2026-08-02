@@ -247,13 +247,24 @@ class _Metric extends StatelessWidget {
       children: [
         FittedBox(
           fit: BoxFit.scaleDown,
-          child: Text(value, style: valueStyle?.copyWith(color: color)),
+          child: Text(
+            value,
+            maxLines: 1,
+            style: valueStyle?.copyWith(color: color),
+          ),
         ),
-        Text(
-          unit,
-          textAlign: TextAlign.center,
-          style: context.text.labelSmall?.copyWith(
-            color: context.colors.textTertiary,
+        // The unit label also has to scale down: "COMPRESSIONS" is 12
+        // letter-spaced characters and overflows a half-width column at large
+        // text scales on narrow devices.
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            unit,
+            maxLines: 1,
+            textAlign: TextAlign.center,
+            style: context.text.labelSmall?.copyWith(
+              color: context.colors.textTertiary,
+            ),
           ),
         ),
       ],
@@ -358,21 +369,38 @@ class _TrackLegend extends StatelessWidget {
     final c = context.colors;
     final meta = context.text.labelSmall;
 
+    // Flexible on every child: the centre label is letter-spaced and long
+    // enough to overflow this Row at large text scales on narrow devices.
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          '${ReviveBpmGauge._trackMin.toInt()}',
-          style: meta?.copyWith(color: c.textTertiary),
+        Flexible(
+          child: Text(
+            '${ReviveBpmGauge._trackMin.toInt()}',
+            maxLines: 1,
+            overflow: TextOverflow.clip,
+            style: meta?.copyWith(color: c.textTertiary),
+          ),
         ),
-        Text(
-          'TARGET ${ReviveBpmGauge._targetLow.toInt()}'
-          '-${ReviveBpmGauge._targetHigh.toInt()}',
-          style: meta?.copyWith(color: c.inRangeSuccess),
+        Flexible(
+          flex: 3,
+          child: Text(
+            'TARGET ${ReviveBpmGauge._targetLow.toInt()}'
+            '-${ReviveBpmGauge._targetHigh.toInt()}',
+            maxLines: 1,
+            textAlign: TextAlign.center,
+            overflow: TextOverflow.ellipsis,
+            style: meta?.copyWith(color: c.inRangeSuccess),
+          ),
         ),
-        Text(
-          '${ReviveBpmGauge._trackMax.toInt()}',
-          style: meta?.copyWith(color: c.textTertiary),
+        Flexible(
+          child: Text(
+            '${ReviveBpmGauge._trackMax.toInt()}',
+            maxLines: 1,
+            textAlign: TextAlign.end,
+            overflow: TextOverflow.clip,
+            style: meta?.copyWith(color: c.textTertiary),
+          ),
         ),
       ],
     );

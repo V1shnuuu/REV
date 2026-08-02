@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:typed_data';
 import 'dart:math';
-import 'package:flutter/services.dart';
 import 'package:audioplayers/audioplayers.dart';
+import '../theme/app_haptics.dart';
 
 class AudioService {
   static final AudioService _instance = AudioService._internal();
@@ -97,7 +97,9 @@ class AudioService {
 
   Future<void> _playBeep(Uint8List beepData) async {
     try {
-      HapticFeedback.lightImpact();
+      // Platform-tuned: an iOS light impact and an Android selection click
+      // feel comparable, whereas the same constant on both does not.
+      AppHaptics.compressionBeat();
       await _player.setVolume(_volume);
       await _player.play(BytesSource(beepData));
     } catch (_) {

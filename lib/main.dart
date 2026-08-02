@@ -30,6 +30,12 @@ void main() {
   // axis, which assumes the phone stays flat/upright against the chest. A
   // landscape rotation would remap the axis and break counting.
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  // Edge-to-edge, so the transparent status bar actually renders transparent
+  // and content flows under the gesture bar. Android 15 enforces this anyway;
+  // declaring it means the same layout on older releases rather than a
+  // version-dependent surprise. Every screen wraps its content in SafeArea,
+  // so nothing critical lands under a notch, cutout or Dynamic Island.
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   runApp(const ReviveApp());
 }
 
