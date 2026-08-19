@@ -1,70 +1,24 @@
-<div align="center">
-
-# 🫀 REVIVE
+# REVIVE
 
 ### A hybrid edge-AI cardiac emergency response system
 
 **Coaching bystanders through CPR in the critical minutes before EMS arrives.**
 
-[![Flutter](https://img.shields.io/badge/Flutter-3.10+-02569B?style=flat-square&logo=flutter&logoColor=white)](https://flutter.dev)
-[![Dart](https://img.shields.io/badge/Dart-3.x-0175C2?style=flat-square&logo=dart&logoColor=white)](https://dart.dev)
-[![Works Offline](https://img.shields.io/badge/Core-Works%20Offline-3DDC97?style=flat-square)](#%EF%B8%8F-degradation-model)
-[![Edge AI](https://img.shields.io/badge/AI-Gemma%20via%20Ollama-FF9A3D?style=flat-square)](#-the-ai-layer)
-[![Health Connect](https://img.shields.io/badge/Samsung-Health%20Connect-1428A0?style=flat-square)](#-samsung-platform-integration)
-[![WCAG AA](https://img.shields.io/badge/WCAG-AA%20verified-4FB0F5?style=flat-square)](#5-perceptual-contrast--the-design-system-gate)
-
-</div>
-
 > [!WARNING]
 > **This app augments a rescue. It never replaces one.**
-> Always call emergency services yourself, first. See [Disclaimer & Liability](#%EF%B8%8F-disclaimer--liability).
+> Always call emergency services yourself, first. See [Disclaimer & Liability](#disclaimer--liability).
 
 ---
 
-## 📋 Table of Contents
-
-| Section | What's in it |
-|---|---|
-| [Executive Summary](#-executive-summary) | The problem, and the design principle that follows from it |
-| [System Workflow](#-system-workflow) | End-to-end flow diagram |
-| [Signal Pipeline](#-signal-pipeline) | How a physical push becomes a BPM number |
-| [Degradation Model](#%EF%B8%8F-degradation-model) | What happens when the network dies |
-| [The Math](#-the-math) | Every formula the app actually runs |
-| [The AI Layer](#-the-ai-layer) | Model choice, and the full parameter matrix |
-| [Samsung Platform Integration](#-samsung-platform-integration) | Health Connect incident logging |
-| [Design System](#-design-system) | Tokens, and the reasoning behind the colour rules |
-| [Setup & Installation](#%EF%B8%8F-setup--installation) | Running it locally |
-| [Project Structure](#-project-structure) | Where everything lives |
-| [Testing & QA](#-testing--qa) | What's enforced by tooling |
-| [Disclaimer & Liability](#%EF%B8%8F-disclaimer--liability) | Read this |
-| [Credits](#-credits) | Attribution |
-
----
-
-## 🎯 Executive Summary
+## Executive Summary
 
 Revive is built for exactly the situation most CPR apps ignore: **the connectivity gap**. Rural areas, disaster zones, basements, and crowded venues all have the same problem — no reliable signal at the moment someone collapses. Revive's core life-saving path never depends on a network connection to work.
 
 Most CPR-coaching demos wire an LLM into the compression loop for narration, then call it done. Two things about that don't hold up:
 
-<table>
-<tr>
-<td width="50%" valign="top">
+**1. The life-saving logic doesn't need an LLM.** Counting compressions and judging rhythm against a 100–120 BPM target is a threshold check on accelerometer data — arithmetic, not intelligence. An LLM sitting in that path just adds latency and a failure mode.
 
-**① The life-saving logic doesn't need an LLM.**
-
-Counting compressions and judging rhythm against a 100–120 BPM target is a threshold check on accelerometer data — arithmetic, not intelligence. An LLM sitting in that path just adds latency and a failure mode.
-
-</td>
-<td width="50%" valign="top">
-
-**② "Offline" and "cloud-dependent LLM" are contradictory claims.**
-
-If your AI runs through a tunnel to a machine somewhere else, the app is not offline — it's hoping the network holds.
-
-</td>
-</tr>
-</table>
+**2. "Offline" and "cloud-dependent LLM" are contradictory claims.** If your AI runs through a tunnel to a machine somewhere else, the app is not offline — it's hoping the network holds.
 
 Revive is honest about both, uses the LLM only where it earns its place, and falls back to a rock-solid offline core.
 
@@ -73,7 +27,7 @@ Revive is honest about both, uses the LLM only where it earns its place, and fal
 
 ---
 
-## 🔀 System Workflow
+## System Workflow
 
 ```mermaid
 flowchart TD
@@ -88,7 +42,7 @@ flowchart TD
     E -->|CARDIAC · UNKNOWN · timeout| H
     C -->|No — offline| H
 
-    subgraph CORE["🔴 ON-DEVICE CORE — never touches the network"]
+    subgraph CORE["ON-DEVICE CORE — never touches the network"]
         direction TB
         H[Standard CPR protocol<br/>8 scripted steps, on-device TTS]
         H --> I[Accelerometer at 50 Hz]
@@ -120,14 +74,14 @@ flowchart TD
 
 ---
 
-## 📡 Signal Pipeline
+## Signal Pipeline
 
 How a physical push on someone's chest becomes a number on screen:
 
 ```mermaid
 sequenceDiagram
     autonumber
-    participant S as 📱 Accelerometer
+    participant S as Accelerometer
     participant M as MotionService
     participant W as Rolling window · max 6
     participant G as BPM Gauge
@@ -164,7 +118,7 @@ Two decisions worth calling out:
 
 ---
 
-## 🛡️ Degradation Model
+## Degradation Model
 
 The app probes the AI tunnel on entry and then every 20 seconds. Neither state blocks CPR coaching.
 
@@ -179,34 +133,25 @@ stateDiagram-v2
     Online --> Offline: probe fails
     Offline --> Online: probe recovers
 
-    note right of Online
-        Voice Q and A live
-        Triage classification available
-        Contextual step tips
-    end note
-
     note right of Offline
-        AI OFFLINE badge visible
-        Canned tips rotate in
-        Compression coaching UNCHANGED
-        Metronome UNCHANGED
-        Voice dialing UNCHANGED
+        AI OFFLINE badge shown
+        Canned tips substituted
     end note
 ```
 
 | Capability | Online | Offline |
 |---|:---:|:---:|
-| Compression counting & BPM | ✅ | ✅ |
-| Rhythm coaching (metronome + haptics) | ✅ | ✅ |
-| 8-step CPR protocol via on-device TTS | ✅ | ✅ |
-| Voice-activated emergency dialing | ✅ | ✅ |
-| Health Connect incident logging | ✅ | ✅ |
-| Bystander triage (choking / drowning branch) | ✅ | ⛔ → defaults to standard CPR |
-| Conversational Q&A | ✅ | ⛔ → canned reminders |
+| Compression counting & BPM | Yes | Yes |
+| Rhythm coaching (metronome + haptics) | Yes | Yes |
+| 8-step CPR protocol via on-device TTS | Yes | Yes |
+| Voice-activated emergency dialing | Yes | Yes |
+| Health Connect incident logging | Yes | Yes |
+| Bystander triage (choking / drowning branch) | Yes | No — defaults to standard CPR |
+| Conversational Q&A | Yes | No — canned reminders |
 
 ---
 
-## 🧮 The Math
+## The Math
 
 Every formula below is the one the code actually executes — file references included.
 
@@ -349,7 +294,7 @@ $$
 
 ---
 
-## 🤖 The AI Layer
+## The AI Layer
 
 ### Why Gemma
 
@@ -393,13 +338,13 @@ Keyword matching cannot do this job, which is the entire justification for the m
 
 ---
 
-## 📲 Samsung Platform Integration
+## Samsung Platform Integration
 
 ```mermaid
 sequenceDiagram
-    participant App as 🫀 Revive
+    participant App as Revive
     participant HC as Android Health Connect
-    participant EMS as 🚑 EMS / Hospital
+    participant EMS as EMS / Hospital
 
     App->>App: CPR session concludes
     App->>App: Compile record — compressions,<br/>duration, AI vs static guidance
@@ -417,29 +362,29 @@ sequenceDiagram
     EMS->>HC: Read incident history on arrival
 ```
 
-**✅ Implemented — Health Connect incident logging.** After a session ends, Revive writes an incident record (compression count, duration, whether AI or static guidance was used) to Android Health Connect — the same on-device store Samsung Health reads from and writes to on modern Galaxy devices. This hands EMS or a hospital a timestamped record of what happened before they arrived, with no paired Watch and no second device. Every call is wrapped so a missing install, denied permission, or unsupported OS degrades to "logging unavailable" and never touches the coaching flow above it ([`health_connect_service.dart`](lib/services/health_connect_service.dart)).
+**Implemented — Health Connect incident logging.** After a session ends, Revive writes an incident record (compression count, duration, whether AI or static guidance was used) to Android Health Connect — the same on-device store Samsung Health reads from and writes to on modern Galaxy devices. This hands EMS or a hospital a timestamped record of what happened before they arrived, with no paired Watch and no second device. Every call is wrapped so a missing install, denied permission, or unsupported OS degrades to "logging unavailable" and never touches the coaching flow above it ([`health_connect_service.dart`](lib/services/health_connect_service.dart)).
 
-**🔜 Next phase — Galaxy Watch haptic pacing.** A companion Wear OS module buzzing at 110 BPM would let a rescuer keep rhythm without looking at the phone. Needs a separate Wear OS build target and a physical paired Watch to verify against — flagged honestly rather than stubbed.
+**Next phase — Galaxy Watch haptic pacing.** A companion Wear OS module buzzing at 110 BPM would let a rescuer keep rhythm without looking at the phone. Needs a separate Wear OS build target and a physical paired Watch to verify against — flagged honestly rather than stubbed.
 
-**🔜 Next phase — Samsung Health Sensor SDK.** Pulling heart rate / PPG from a paired Galaxy Watch to help detect or confirm a cardiac event requires partner SDK access, which is not obtainable on a hackathon timeline. It is the natural extension of the Health Connect integration already in place.
+**Next phase — Samsung Health Sensor SDK.** Pulling heart rate / PPG from a paired Galaxy Watch to help detect or confirm a cardiac event requires partner SDK access, which is not obtainable on a hackathon timeline. It is the natural extension of the Health Connect integration already in place.
 
 ---
 
-## 🎨 Design System
+## Design System
 
 Revive runs on a token-driven design system rather than ad-hoc styling — semantic colour tokens, a typographic scale, and spacing, shape, motion and haptic vocabularies, all in [`lib/theme/`](lib/theme/), with **no raw hex values anywhere else in the app**. Full documentation: **[DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)**.
 
 Two rules do most of the work:
 
-> **🔴 Red is reserved for "stop and call for help."**
+> **Red is reserved for "stop and call for help."**
 > An out-of-range compression rate is a normal, transient state during correct CPR. Rhythm feedback therefore uses **amber**, not red. Spending alarm-red on a routine fluctuation risks alarm fatigue on the one signal that must never be ignored.
 
-> **🎨 Never colour alone.**
+> **Never colour alone.**
 > Every state carries colour **and** icon **and** text **and** motion — so any single channel conveys the instruction on its own. That is what makes the app usable by a colour-blind rescuer, in direct sunlight, at arm's length.
 
 ---
 
-## ⚙️ Setup & Installation
+## Setup & Installation
 
 ### 1 · AI backend *(optional — core CPR coaching works entirely without this)*
 
@@ -473,7 +418,7 @@ flutter run          # physical Android device required
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```text
 revive/
@@ -500,7 +445,7 @@ revive/
 
 ---
 
-## ✅ Testing & QA
+## Testing & QA
 
 The system is enforced by tooling, not by convention.
 
@@ -520,7 +465,7 @@ Device-dependent verification that automation cannot cover — and the current k
 
 ---
 
-## ⚠️ Disclaimer & Liability
+## Disclaimer & Liability
 
 > [!CAUTION]
 > - **This app provides CPR guidance only.** It is not a substitute for professional medical training or emergency services.
@@ -532,14 +477,10 @@ The emergency number is a single constant ([`AppConfig.emergencyNumber`](lib/con
 
 ---
 
-## 🙏 Credits
+## Credits
 
 The original Revive CPR assistant — accelerometer compression tracking, the voice STT/TTS loop, the CPR step guide, and the animation work — was built by **[@yogesh4216](https://github.com/yogesh4216)**. This repository is a copy of that project, shared with permission, extended here with the hybrid architecture, AI triage, Health Connect integration, design system, and test coverage described above.
 
 ---
 
-<div align="center">
-
-### Every Second Counts. Every Life Matters.
-
-</div>
+**Every Second Counts. Every Life Matters.**
